@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"> 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ailes group</title>
+<title>Alushe</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assignment-history.js"></script>
@@ -135,7 +135,7 @@ td.wrap{white-space:normal;min-width:120px;}
 </div>
 
 <div class="top-bar">
-  <div class="top-bar-title" style="font-family:'Playfair Display',serif;letter-spacing:2px">✦ ailes group</div>
+<div class="top-bar-title" style="font-family:'Playfair Display',serif;letter-spacing:2px">✦ Alushe</div>
   <div class="top-bar-right">
     <span class="user-badge" id="user-badge">👁 閲覧モード</span>
     <button class="btn btn-outline btn-sm" id="auth-btn" onclick="showLoginModal()" style="background:transparent;color:var(--gold-light);border-color:var(--gold)">ログイン</button>
@@ -488,11 +488,9 @@ function showPage(name){
 }
 
 const FUNC_LIST=[
-  {id:'curriculum',icon:'📋',name:'カリキュラム進捗',desc:'スタッフのカリキュラム進捗を管理',minRole:null},
   {id:'staff',icon:'👥',name:'人材マスター',desc:'スタッフ情報の登録・管理',minRole:'staff_editor'},
-  {id:'appointment',icon:'📅',name:'次回予約管理',desc:'次回予約の管理',minRole:null,url:'next-reservation.html'},
+  {id:'appointment',icon:'📅',name:'次回予約管理',desc:'次回予約の管理',minRole:null,url:'next-reservation.html',comingSoon:true},
   {id:'sales',icon:'📊',name:'数値管理',desc:'月次売上・数値の管理',minRole:null,url:'sales.html'},
-    {id:'task',icon:'✅',name:'タスク管理',desc:'役職ごとのタスク管理',minRole:null,url:'task.html'},
     {id:'meeting',icon:'📝',name:'会議報告',desc:'幹部・店舗会議の記録',minRole:'meeting_viewer',url:'meeting.html'},
       {id:'evaluation',icon:'⭐',name:'人事評価制度',desc:'評価の記録と管理',minRole:null,url:'evaluation.html'},
   {id:'schedule',icon:'📆',name:'年間スケジュール',desc:'年間の予定管理',minRole:null,url:'schedule.html'},
