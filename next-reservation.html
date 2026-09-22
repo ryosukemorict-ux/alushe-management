@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>次回予約管理 | ailes group</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="assignment-history.js"></script>
+<style>
+:root{--cream:#faf6f0;--gold:#c9a96e;--gold-light:#e8d5b0;--dark:#1a1410;--mid:#7a6a58;--soft:#c4b49e;--accent:#8b5e3c;--green:#4a7c59;--red:#c0392b;--blue:#2980b9;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--cream);font-family:'Noto Sans JP',sans-serif;color:var(--dark);min-height:100vh;}
+.top-bar{background:var(--dark);color:var(--gold-light);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;}
+.top-bar-title{font-family:'Playfair Display',serif;font-size:18px;letter-spacing:1px;}
+.back-btn{background:rgba(255,255,255,0.1);border:1px solid var(--gold);color:var(--gold-light);padding:6px 14px;border-radius:20px;font-size:12px;cursor:pointer;text-decoration:none;}
+.tab-bar{background:#fff;border-bottom:2px solid var(--gold-light);display:flex;padding:0 16px;gap:2px;}
+.tab{padding:10px 16px;font-size:13px;font-weight:500;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;color:var(--mid);}
+.tab.active{border-bottom-color:var(--gold);color:var(--dark);font-weight:700;}
+.main{padding:16px;max-width:1400px;margin:0 auto;}
+.panel{background:#fff;border-radius:12px;padding:16px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,0.06);}
+.panel-title{font-size:14px;font-weight:700;margin-bottom:12px;}
+.filter-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px;}
+.filter-bar label{font-size:12px;color:var(--mid);}
+.filter-sel{border:1px solid var(--gold-light);border-radius:8px;padding:5px 8px;font-size:13px;background:#fff;}
+.btn{padding:7px 14px;border-radius:8px;font-size:12px;cursor:pointer;border:none;font-family:'Noto Sans JP',sans-serif;}
+.btn-outline{background:#fff;border:1px solid var(--gold);color:var(--dark);}
+table.tbl th:first-child{position:sticky;left:0;z-index:2;background:var(--dark);}
+table.tbl{width:100%;border-collapse:collapse;font-size:12px;}
+table.tbl th{background:var(--dark);color:var(--gold-light);padding:7px 5px;text-align:center;white-space:nowrap;font-weight:500;}
+table.tbl th:first-child{position:sticky;left:0;z-index:2;background:var(--dark);}
+table.tbl td:first-child{position:sticky;left:0;z-index:1;background:#fff;}
+table.tbl td:first-child{position:sticky;left:0;z-index:1;background:#fff;}
+table.tbl td{padding:5px 4px;text-align:center;border-bottom:1px solid var(--gold-light);vertical-align:middle;}
+table.tbl tr:hover td{background:rgba(201,169,110,0.06);}table.tbl tr:hover td:first-child{background:#fff;}
+table.tbl tr.sub td{background:rgba(201,169,110,0.15);font-weight:700;font-size:11px;}
+.cw{display:flex;align-items:center;justify-content:center;gap:2px;}
+select.ns{width:38px;min-width:38px;max-width:38px;border:1px solid var(--gold-light);border-radius:5px;padding:2px;font-size:11px;background:#fff;}
+.rb{display:inline-block;padding:1px 5px;border-radius:8px;font-size:11px;font-weight:700;min-width:32px;text-align:center;}
+.rh{background:#d4edda;color:#155724;}.rm{background:#fff3cd;color:#856404;}.rl{background:#f8d7da;color:#721c24;}
+.summary{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px;}
+.stat{background:var(--cream);border-radius:10px;padding:8px 12px;flex:1;min-width:90px;display:flex;align-items:center;gap:6px;}
+.stat-n{font-size:16px;font-weight:700;color:var(--gold);white-space:nowrap;}
+.stat-l{font-size:11px;color:var(--mid);white-space:nowrap;}
+.notice{background:#fff8e1;border-left:4px solid var(--gold);padding:8px 12px;border-radius:6px;font-size:12px;color:var(--mid);margin-bottom:12px;}
+.section{display:none;}.section.active{display:block;}
+.rank-list{display:flex;flex-direction:column;gap:8px;}
+.rank-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;background:var(--cream);}
+.rank-num{font-size:16px;font-weight:700;width:28px;text-align:center;}
+.rng{color:#c9a96e;}.rns{color:#888;}.rnb{color:#cd7f32;}
+.rank-name{flex:1;font-size:13px;font-weight:500;}
+.rank-store{font-size:11px;color:var(--mid);}
+.rbw{width:120px;}.rbb{background:#e0e0e0;border-radius:4px;height:7px;overflow:hidden;}
+.rbf{height:7px;border-radius:4px;background:linear-gradient(90deg,var(--gold),var(--accent));}
+.month-nav{display:flex;align-items:center;gap:10px;}
+.month-nav button{background:none;border:1px solid var(--gold-light);border-radius:6px;width:26px;height:26px;cursor:pointer;font-size:13px;}
+.month-label{font-size:14px;font-weight:700;min-width:90px;text-align:center;}
+.chart-wrap{position:relative;height:280px;}
+.save-status{font-size:12px;color:var(--mid);}
+.loading{text-align:center;padding:30px;color:var(--mid);}
+  .table-wrap{overflow-y:auto;max-height:70vh;}
+  @media(max-width:480px){.notice{font-size:11px;padding:5px 8px;}.stat-n{font-size:16px;}.stat{padding:7px 10px;}.summary{gap:6px;margin-bottom:8px;}.panel{padding:10px;}.panel-title{margin-bottom:6px;}}
+</style>
+</head>
+<body>
+<div class="top-bar">
+  <div class="top-bar-title" style="font-family:'Playfair Display',serif;letter-spacing:2px">✦ ailes group</div>
+  <span id="user-badge" style="font-size:12px;background:rgba(255,255,255,0.1);padding:5px 12px;border-radius:20px;color:var(--gold-light)">👁 閲覧モード</span>
+</div>
+<div style="background:white;border-bottom:2px solid #e8d5b0;padding:0 16px;display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch;">
+  <button onclick="window.location.href='index.html'" style="font-size:13px;font-weight:500;padding:12px 18px;border:none;background:none;color:#7a6a58;cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent;margin-bottom:-2px;">🏠 ホーム</button>
+  <button onclick="window.location.href='index.html?page=curriculum'" style="font-size:13px;font-weight:500;padding:12px 18px;border:none;background:none;color:#7a6a58;cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent;margin-bottom:-2px;">📋 カリキュラム進捗</button>
+  <button style="font-size:13px;font-weight:700;padding:12px 18px;border:none;background:none;color:#c9a96e;cursor:pointer;white-space:nowrap;border-bottom:3px solid #c9a96e;margin-bottom:-2px;">📅 次回予約</button>
+</div>
+<div class="tab-bar">
+  <div class="tab active" onclick="switchTab('table')">📋 日別入力表</div>
+  <div class="tab" onclick="switchTab('ranking')">🏆 ランキング</div>
+  <div class="tab" onclick="switchTab('graph')">📈 成長グラフ</div>
+</div>
+<div class="main">
+
+  <!-- 日別入力表 -->
+  <div id="sec-table" class="section active">
+    <div class="panel">
+      <div class="panel-title">📋 日別次回予約入力表</div>
+      <div class="filter-bar">
+        <div class="month-nav">
+          <button onclick="changeMonth(-1)">‹</button>
+<div class="month-label" id="month-label-table"></div>
+          <button onclick="changeMonth(1)">›</button>
+        </div>
+        <label>店舗：</label>
+        <select class="filter-sel" id="store-filter-table" onchange="renderTable()">
+          <option value="both">両店合計</option>
+          <option value="els">ailes</option>
+          <option value="soleil">soleil by ailes</option>
+        </select>
+        <span class="save-status" id="save-status"></span>
+      </div>
+      <div class="notice">📝 来客数・次回予約数を変更すると1秒後に自動保存されます。</div>
+      <div id="table-summary" class="summary"></div>
+      <div class="table-wrap">
+        <table class="tbl"><thead id="table-head"></thead><tbody id="table-body"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ランキング -->
+  <div id="sec-ranking" class="section">
+    <div class="panel">
+      <div class="panel-title">🏆 月別次回予約率ランキング</div>
+      <div class="filter-bar">
+        <div class="month-nav">
+          <button onclick="changeMonthRank(-1)">‹</button>
+　　　　　　<div class="month-label" id="month-label-rank"></div>
+          <button onclick="changeMonthRank(1)">›</button>
+        </div>
+        <label>店舗：</label>
+        <select class="filter-sel" id="store-filter-rank" onchange="renderRanking()">
+          <option value="both">全員</option>
+          <option value="els">ailes</option>
+          <option value="soleil">soleil by ailes</option>
+        </select>
+      </div>
+      <div id="ranking-list" class="rank-list"><div class="loading">読み込み中...</div></div>
+    </div>
+  </div>
+
+  <!-- 成長グラフ -->
+  <div id="sec-graph" class="section">
+    <div class="panel">
+      <div class="panel-title">📈 店舗平均グラフ</div>
+      <div class="filter-bar">
+        <label>期間：</label>
+        <select class="filter-sel" id="graph-months" onchange="renderGraph()">
+          <option value="6">直近6ヶ月</option>
+          <option value="12">直近12ヶ月</option>
+          <option value="3" selected>直近3ヶ月</option>
+        </select>
+      </div>
+      <div class="chart-wrap"><canvas id="store-chart"></canvas></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">📈 個人別グラフ</div>
+      <div class="filter-bar">
+        <label>店舗：</label>
+        <select class="filter-sel" id="store-filter-graph" onchange="buildStaffCheckboxes()">
+          <option value="both">全員</option>
+          <option value="els">ailes</option>
+          <option value="soleil">soleil by ailes</option>
+        </select>
+      </div>
+      <div id="staff-checkboxes" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;"></div>
+      <div class="chart-wrap"><canvas id="growth-chart"></canvas></div>
+    </div>
+  </div>
+
+</div>
+<script>
+const SUPABASE_URL = 'https://nrweporylfaorlqektsk.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yd2Vwb3J5bGZhb3JscWVrdHNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0ODUzMDAsImV4cCI6MjA5NDA2MTMwMH0.48m8FDoD3oFaqxXEZ625wr5zD001c1ghuUOmcaNaICQ';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const __today=new Date();
+let currentYear=__today.getFullYear(),currentMonth=__today.getMonth()+1,rankYear=__today.getFullYear(),rankMonth=__today.getMonth()+1;
+let allStaff=[],allReservations=[];
+let assignHistory=[];
+let growthChart=null,storeChartObj=null;
+let saveTimers={};
+
+const posOrder=['店長','チーフ','スタイリスト','Jrスタイリスト','カラーリスト','アシスタント'];
+
+async function init(){
+  document.getElementById('month-label-table').textContent=`${currentYear}年${currentMonth}月`;
+  document.getElementById('month-label-rank').textContent=`${rankYear}年${rankMonth}月`;
+  const{data,error}=await sb.from('students').select('id,name,store,position,is_active').eq('is_active',true);
+  if(!error&&data){
+    allStaff=data.sort((a,b)=>{
+      const ai=posOrder.indexOf(a.position),bi=posOrder.indexOf(b.position);
+      return (ai===-1?99:ai)-(bi===-1?99:bi);
+    });
+  }
+  assignHistory=await loadAssignmentHistory(sb);
+  await loadReservations();
+  renderTable();
+}
+
+async function loadReservations(){
+  const s=`${currentYear}-${String(currentMonth).padStart(2,'0')}-01`;
+  const eDay=new Date(currentYear,currentMonth,0).getDate();
+  const e=`${currentYear}-${String(currentMonth).padStart(2,'0')}-${String(eDay).padStart(2,'0')}`;
+  const{data,error}=await sb.from('next_reservations').select('*').gte('date',s).lte('date',e);
+  if(!error&&data)allReservations=data;
+}
+
+function switchTab(tab){
+  document.querySelectorAll('.tab').forEach((t,i)=>{t.classList.remove('active');if(['table','ranking','graph'][i]===tab)t.classList.add('active');});
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sec-'+tab).classList.add('active');
+  if(tab==='ranking')renderRanking();
+  if(tab==='graph'){buildStaffCheckboxes();renderGraph();}
+}
+
+function changeMonth(d){
+  currentMonth+=d;
+  if(currentMonth>12){currentMonth=1;currentYear++;}
+  if(currentMonth<1){currentMonth=12;currentYear--;}
+  document.getElementById('month-label-table').textContent=`${currentYear}年${currentMonth}月`;
+  loadReservations().then(()=>renderTable());
+}
+
+function changeMonthRank(d){
+  rankMonth+=d;
+  if(rankMonth>12){rankMonth=1;rankYear++;}
+  if(rankMonth<1){rankMonth=12;rankYear--;}
+  document.getElementById('month-label-rank').textContent=`${rankYear}年${rankMonth}月`;
+  renderRanking();
+}
+
+function getStoreForDate(s,monthStr){
+  const v=valueAsOf(assignHistory,s.id,'store',monthStr+'-01');
+  return v||s.store;
+}
+function getStaff(filterId){
+  const f=document.getElementById(filterId).value;
+  const monthStr=currentYear+'-'+String(currentMonth).padStart(2,'0');
+  return allStaff.filter(s=>{
+    const st=getStoreForDate(s,monthStr);
+    if(f==='els')return st==='els'||st==='エルズ';
+    if(f==='soleil')return st==='soleil'||st==='soleil by ailes';
+    return true;
+  }).filter(s=>posOrder.includes(s.position));
+}
+
+function opts(sel){
+  let h='';for(let i=0;i<=30;i++)h+=`<option value="${i}"${sel==i?' selected':''}>${i}</option>`;
+  return h;
+}
+
+function badge(rate,hasData){
+  const rc=rate>=70?'rh':rate>=50?'rm':(hasData?'rl':'');
+  return `<span class="rb ${rc}">${hasData?rate+'%':'-'}</span>`;
+}
+
+function renderTable(){
+  const sf=document.getElementById('store-filter-table').value;
+  const staff=getStaff('store-filter-table');
+  const days=new Date(currentYear,currentMonth,0).getDate();
+  const head=document.getElementById('table-head');
+    head.innerHTML=`<tr><th style="min-width:65px;position:sticky;top:0;left:0;z-index:3;background:var(--dark)">日付</th>${staff.map(s=>`<th style="min-width:110px;position:sticky;top:0;z-index:2;background:var(--dark)">${s.name}<br><span style="font-size:10px;opacity:.7">${getStoreForDate(s,currentYear+'-'+String(currentMonth).padStart(2,'0'))||''}</span></th>`).join('')}${sf==='both'?'<th style="position:sticky;top:0;z-index:2;background:var(--dark)">合計<br>来客</th><th style="position:sticky;top:0;z-index:2;background:var(--dark)">合計<br>予約</th><th style="position:sticky;top:0;z-index:2;background:var(--dark)">合計<br>率</th>':''}</tr>`;
+ head.innerHTML+=`<tr style="background:rgba(201,169,110,.15)"><th style="position:sticky;top:37px;left:0;z-index:3;background:rgba(201,169,110,.15)"></th>${staff.map(()=>`<th style="font-size:10px;font-weight:400;position:sticky;top:37px;z-index:2;background:rgba(201,169,110,.15)">来客/予約/率</th>`).join('')}${sf==='both'?'<th style="position:sticky;top:37px;z-index:2;background:rgba(201,169,110,.15)"></th><th style="position:sticky;top:37px;z-index:2;background:rgba(201,169,110,.15)"></th><th style="position:sticky;top:37px;z-index:2;background:rgba(201,169,110,.15)"></th>':''}</tr>`;
+  const body=document.getElementById('table-body');
+  body.innerHTML='';
+  let mv=0,mn=0;
+  for(let d=1;d<=days;d++){
+    const ds=`${currentYear}-${String(currentMonth).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dow=['日','月','火','水','木','金','土'][new Date(ds).getDay()];
+    const isWe=new Date(ds).getDay()===0||new Date(ds).getDay()===6;
+    let rv=0,rn=0;
+    const cells=staff.map(s=>{
+      const rec=allReservations.find(r=>String(r.staff_id)===String(s.id)&&r.date===ds);
+      const v=rec?rec.visitor_count:0,n=rec?rec.next_reservation_count:0;
+      const rate=v>0?Math.round(n/v*100):0;
+      rv+=v;rn+=n;return `<td><div class="cw" style="min-width:100px"><select class="ns" data-staff="${s.id}" data-date="${ds}" data-type="visitor" onchange="recalc(this)">${opts(v)}</select><select class="ns" data-staff="${s.id}" data-date="${ds}" data-type="next_res" onchange="recalc(this)">${opts(n)}</select>${badge(rate,v>0)}</div></td>`;
+    }).join('');
+    mv+=rv;mn+=rn;
+    const rrate=rv>0?Math.round(rn/rv*100):0;
+    const tr=document.createElement('tr');
+    if(isWe)tr.style.background='rgba(200,200,200,.06)';
+    tr.innerHTML=`<td style="font-weight:500;white-space:nowrap">${currentMonth}/${d}(${dow})</td>${cells}${sf==='both'?`<td>${rv||'-'}</td><td>${rn||'-'}</td><td>${badge(rrate,rv>0)}</td>`:''}`;
+    body.appendChild(tr);
+          if((d===10||d===20)||d===days){
+        const sd=d===days?1:d<=10?1:11;
+        const lbl=d===days?'月末合計':`〜${d}日 小計`;
+        const sub=document.createElement('tr');
+        sub.className='sub';
+        sub.dataset.sd=sd;sub.dataset.ed=d;
+        const sc=staff.map(s=>{
+          let sv=0,sn=0;
+          for(let x=sd;x<=d;x++){
+            const xds=`${currentYear}-${String(currentMonth).padStart(2,'0')}-${String(x).padStart(2,'0')}`;
+            const rec=allReservations.find(r=>String(r.staff_id)===String(s.id)&&r.date===xds);
+            if(rec){sv+=rec.visitor_count||0;sn+=rec.next_reservation_count||0;}
+          }
+          const sr=sv>0?Math.round(sn/sv*100):0;
+          return `<td>${sv||'-'} / ${sn||'-'} / ${badge(sr,sv>0)}</td>`;
+        }).join('');
+              let tv=0,tn=0;          allReservations.forEach(r=>{
+            const rd=new Date(r.date);
+            if(rd.getFullYear()===currentYear&&rd.getMonth()+1===currentMonth){
+              tv+=r.visitor_count||0;tn+=r.next_reservation_count||0;
+            }
+          });
+            const tr2=tv>0?Math.round(tn/tv*100):0;
+        sub.innerHTML=`<td>${lbl}</td>${sc}${sf==='both'?`<td>${tv>0?tv:'-'}</td><td>${tn>0?tn:'-'}</td><td>${badge(tr2,tv>0)}</td>`:''}`;
+        body.appendChild(sub);
+      }
+      updateSummary(mv,mn);
+    }
+}
+
+function updateSummary(v,n){
+  const r=v>0?Math.round(n/v*100):0;
+    document.getElementById('table-summary').innerHTML=`
+    <div class="stat"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><div class="stat-l">来客数</div><div class="stat-n">${v}</div></div></div>
+    <div class="stat"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><div class="stat-l">次回予約数</div><div class="stat-n">${n}</div></div></div>
+    <div class="stat"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><div class="stat-l">次回予約率</div><div class="stat-n" style="color:${r>=70?'var(--green)':r>=50?'#856404':'var(--red)'}">${r}%</div></div></div>`; } 
+function recalc(input){
+  const sid=input.dataset.staff,date=input.dataset.date;
+  const row=input.closest('tr');
+  const v=parseInt(row.querySelector(`select[data-staff="${sid}"][data-date="${date}"][data-type="visitor"]`)?.value)||0;
+  const n=parseInt(row.querySelector(`select[data-staff="${sid}"][data-date="${date}"][data-type="next_res"]`)?.value)||0;
+  const rate=v>0?Math.round(n/v*100):0;
+  const spans=row.querySelectorAll('.rb');
+  const idx=Array.from(row.querySelectorAll('td')).findIndex(td=>td.querySelector(`select[data-staff="${sid}"]`));
+  const td=row.querySelectorAll('td')[idx];
+  if(td){const rb=td.querySelector('.rb');if(rb){rb.textContent=v>0?rate+'%':'-';rb.className='rb '+(rate>=70?'rh':rate>=50?'rm':(v>0?'rl':''));}}
+  updateTotals();
+  autoSave(sid,date);
+}
+
+function updateTotals(){
+  const staff=getStaff('store-filter-table');
+  const sf=document.getElementById('store-filter-table').value;
+  let mv=0,mn=0;
+  document.querySelectorAll('#table-body select[data-type="visitor"]').forEach(s=>mv+=parseInt(s.value)||0);
+  document.querySelectorAll('#table-body select[data-type="next_res"]').forEach(s=>mn+=parseInt(s.value)||0);
+  updateSummary(mv,mn);
+  document.querySelectorAll('#table-body tr.sub').forEach(sub=>{
+    const sd=parseInt(sub.dataset.sd),ed=parseInt(sub.dataset.ed);
+    const tds=sub.querySelectorAll('td');
+    staff.forEach((s,idx)=>{
+      let sv=0,sn=0;
+      for(let x=sd;x<=ed;x++){
+        const xds=`${currentYear}-${String(currentMonth).padStart(2,'0')}-${String(x).padStart(2,'0')}`;
+        document.querySelectorAll(`select[data-staff="${s.id}"][data-date="${xds}"][data-type="visitor"]`).forEach(el=>sv+=parseInt(el.value)||0);
+        document.querySelectorAll(`select[data-staff="${s.id}"][data-date="${xds}"][data-type="next_res"]`).forEach(el=>sn+=parseInt(el.value)||0);
+      }
+      const sr=sv>0?Math.round(sn/sv*100):0;
+      if(tds[idx+1])tds[idx+1].innerHTML=`${sv||'-'} / ${sn||'-'} / ${badge(sr,sv>0)}`;
+    });
+    if(sf==='both'){
+      let tv=0,tn=0;
+      for(let x=sd;x<=ed;x++){
+        const xds=`${currentYear}-${String(currentMonth).padStart(2,'0')}-${String(x).padStart(2,'0')}`;
+        document.querySelectorAll(`select[data-date="${xds}"][data-type="visitor"]`).forEach(el=>tv+=parseInt(el.value)||0);
+        document.querySelectorAll(`select[data-date="${xds}"][data-type="next_res"]`).forEach(el=>tn+=parseInt(el.value)||0);
+      }
+      const tr2=tv>0?Math.round(tn/tv*100):0;
+      const li=staff.length+1;
+      if(tds[li])tds[li].textContent=tv||'-';
+      if(tds[li+1])tds[li+1].textContent=tn||'-';
+      if(tds[li+2])tds[li+2].innerHTML=badge(tr2,tv>0);
+    }
+  });
+    const monthSub=document.querySelector('#table-body tr.sub[data-ed="'+new Date(currentYear,currentMonth,0).getDate()+'"]');
+  if(monthSub){const mtds=monthSub.querySelectorAll('td');let mtv=0,mtn=0;document.querySelectorAll('#table-body select[data-type="visitor"]').forEach(el=>mtv+=parseInt(el.value)||0);document.querySelectorAll('#table-body select[data-type="next_res"]').forEach(el=>mtn+=parseInt(el.value)||0);const mtr=mtv>0?Math.round(mtn/mtv*100):0;const mli=staff.length+1;if(mtds[mli])mtds[mli].textContent=mtv||'-';if(mtds[mli+1])mtds[mli+1].textContent=mtn||'-';if(mtds[mli+2])mtds[mli+2].innerHTML=badge(mtr,mtv>0);}
+}
+
+function autoSave(sid,date){
+  const key=`${sid}_${date}`;
+  clearTimeout(saveTimers[key]);
+  document.getElementById('save-status').textContent='編集中...';
+  saveTimers[key]=setTimeout(async()=>{
+    const v=parseInt(document.querySelector(`select[data-staff="${sid}"][data-date="${date}"][data-type="visitor"]`)?.value)||0;
+    const n=parseInt(document.querySelector(`select[data-staff="${sid}"][data-date="${date}"][data-type="next_res"]`)?.value)||0;
+    const{error}=await sb.from('next_reservations').upsert([{staff_id:sid,date:date,visitor_count:v,next_reservation_count:n}],{onConflict:'staff_id,date'});
+    document.getElementById('save-status').textContent=error?'❌ 保存エラー':'✅ 保存済み';
+    setTimeout(()=>document.getElementById('save-status').textContent='',2000);
+  },1000);
+}
+
+async function renderRanking(){
+  const sf=document.getElementById('store-filter-rank').value;
+  const s=`${rankYear}-${String(rankMonth).padStart(2,'0')}-01`;
+  const eDay=new Date(rankYear,rankMonth,0).getDate();
+  const e=`${rankYear}-${String(rankMonth).padStart(2,'0')}-${String(eDay).padStart(2,'0')}`;
+  const{data,error}=await sb.from('next_reservations').select('staff_id,visitor_count,next_reservation_count').gte('date',s).lte('date',e);
+  const list=document.getElementById('ranking-list');
+  if(error||!data){list.innerHTML='<div class="loading">エラー</div>';return;}
+  let staff=allStaff.filter(s=>{
+    if(sf==='els')return s.store==='els'||s.store==='エルズ';
+    if(sf==='soleil')return s.store==='soleil'||s.store==='soleil by ailes';
+    return true;
+  });
+  const stats=staff.map(s=>{
+    const recs=data.filter(r=>r.staff_id===s.id);
+    const tv=recs.reduce((a,r)=>a+r.visitor_count,0);
+    const tn=recs.reduce((a,r)=>a+r.next_reservation_count,0);
+    return{...s,tv,tn,rate:tv>0?Math.round(tn/tv*100):0};
+  }).filter(s=>s.tv>0).sort((a,b)=>b.rate-a.rate);
+  if(!stats.length){list.innerHTML='<div class="loading">データなし</div>';return;}
+  const max=stats[0].rate;
+  list.innerHTML=stats.map((s,i)=>{
+    const nc=i===0?'rng':i===1?'rns':i===2?'rnb':'';
+    const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+    const rc=s.rate>=70?'rh':s.rate>=50?'rm':'rl';
+    return`<div class="rank-item"><div class="rank-num ${nc}">${medal||i+1}</div><div style="flex:1"><div class="rank-name">${s.name}</div><div class="rank-store">${s.store||''} / 来客${s.tv}名 予約${s.tn}名</div></div><div class="rbw"><div class="rbb"><div class="rbf" style="width:${max>0?Math.round(s.rate/max*100):0}%"></div></div></div><div style="min-width:44px;text-align:right"><span class="rb ${rc}">${s.rate}%</span></div></div>`;
+  }).join('');
+}
+
+async function renderGraph(){
+  const months=parseInt(document.getElementById('graph-months').value);
+  const sf=document.getElementById('store-filter-graph').value;
+  const now=new Date();
+  const labels=[],ml=[];
+  for(let i=months-1;i>=0;i--){
+    const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+    labels.push(`${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}`);
+    ml.push({y:d.getFullYear(),m:d.getMonth()+1});
+  }
+  const s=`${ml[0].y}-${String(ml[0].m).padStart(2,'0')}-01`;
+  const lm=ml[ml.length-1];
+  const eDay=new Date(lm.y,lm.m,0).getDate();
+  const e=`${lm.y}-${String(lm.m).padStart(2,'0')}-${String(eDay).padStart(2,'0')}`;
+  const{data}=await sb.from('next_reservations').select('staff_id,date,visitor_count,next_reservation_count').gte('date',s).lte('date',e);
+
+  const els=allStaff.filter(s=>s.store==='els'||s.store==='エルズ');
+  const sol=allStaff.filter(s=>s.store==='soleil'||s.store==='soleil by ailes');
+  const cr=(sl,{y,m})=>{
+    const px=`${y}-${String(m).padStart(2,'0')}`;
+    const recs=(data||[]).filter(r=>sl.some(s=>s.id===r.staff_id)&&r.date.startsWith(px));
+    const tv=recs.reduce((a,r)=>a+r.visitor_count,0);
+    const tn=recs.reduce((a,r)=>a+r.next_reservation_count,0);
+    return tv>0?Math.round(tn/tv*100):null;
+  };
+
+  if(storeChartObj)storeChartObj.destroy();
+  storeChartObj=new Chart(document.getElementById('store-chart').getContext('2d'),{
+    type:'line',
+    data:{labels,datasets:[
+      {label:'ailes',data:ml.map(m=>cr(els,m)),borderColor:'#c9a96e',backgroundColor:'#c9a96e22',borderWidth:3,tension:0.4,spanGaps:true,pointRadius:5},
+      {label:'soleil',data:ml.map(m=>cr(sol,m)),borderColor:'#4a7c59',backgroundColor:'#4a7c5922',borderWidth:3,tension:0.4,spanGaps:true,pointRadius:5},
+      {label:'両店合計',data:ml.map(m=>cr(allStaff,m)),borderColor:'#2980b9',backgroundColor:'#2980b922',borderWidth:3,tension:0.4,spanGaps:true,pointRadius:5},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{family:'Noto Sans JP',size:11}}},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.y!=null?c.parsed.y+'%':'データなし'}`}}},scales:{y:{min:0,max:100,ticks:{callback:v=>v+'%'}},x:{ticks:{font:{size:11}}}}}
+  });
+
+  let staff=allStaff.filter(s=>posOrder.includes(s.position)).filter(s=>{
+    const sf=document.getElementById('store-filter-graph').value;
+    if(sf==='els')return s.store==='els'||s.store==='エルズ';
+    if(sf==='soleil')return s.store==='soleil'||s.store==='soleil by ailes';
+    return true;
+  });
+  const checked=Array.from(document.querySelectorAll('#staff-checkboxes input:checked')).map(el=>el.value);
+  const colors=['#c9a96e','#4a7c59','#2980b9','#7d3c98','#c0392b','#e67e22','#1abc9c','#e74c3c','#3498db','#9b59b6','#f39c12','#27ae60','#8e44ad','#d35400'];
+  const datasets=staff.filter(s=>checked.includes(s.id)).map((s,idx)=>({
+    label:s.name,
+    data:ml.map(({y,m})=>{
+      const px=`${y}-${String(m).padStart(2,'0')}`;
+      const recs=(data||[]).filter(r=>r.staff_id===s.id&&r.date.startsWith(px));
+      const tv=recs.reduce((a,r)=>a+r.visitor_count,0);
+      const tn=recs.reduce((a,r)=>a+r.next_reservation_count,0);
+      return tv>0?Math.round(tn/tv*100):null;
+    }),
+    borderColor:colors[staff.indexOf(s)%colors.length],backgroundColor:colors[staff.indexOf(s)%colors.length]+'22',
+    tension:0.4,spanGaps:true,pointRadius:5,pointHoverRadius:7,
+  }));
+  if(growthChart)growthChart.destroy();
+  growthChart=new Chart(document.getElementById('growth-chart').getContext('2d'),{
+    type:'line',data:{labels,datasets},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{family:'Noto Sans JP',size:11}}},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.y!=null?c.parsed.y+'%':'データなし'}`}}},scales:{y:{min:0,max:100,ticks:{callback:v=>v+'%',font:{size:11}},title:{display:true,text:'次回予約率 (%)',font:{size:11}}},x:{ticks:{font:{size:11}}}}}
+  });
+  buildStaffCheckboxes(staff,checked);
+}
+function buildStaffCheckboxes(staff,checked=[]){
+  if(!staff){const sf=document.getElementById('store-filter-graph').value;staff=allStaff.filter(s=>posOrder.includes(s.position)).filter(s=>{if(sf==='els')return s.store==='els'||s.store==='エルズ';if(sf==='soleil')return s.store==='soleil'||s.store==='soleil by ailes';return true;});}
+  const colors=['#c9a96e','#4a7c59','#2980b9','#7d3c98','#c0392b','#e67e22','#1abc9c','#e74c3c','#3498db','#9b59b6','#f39c12','#27ae60','#8e44ad','#d35400'];
+  document.getElementById('staff-checkboxes').innerHTML=staff.map((s,idx)=>{const c=colors[idx%colors.length];const isChecked=checked.includes(s.id);return`<label style="display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;border:2px solid ${c};background:${isChecked?c:'white'};color:${isChecked?'white':c};font-size:12px;cursor:pointer;font-weight:600;"><input type="checkbox" value="${s.id}" ${isChecked?'checked':''} onchange="renderGraph()" style="display:none">${s.name}</label>`;}).join('');
+}
+
+init();
+
+</script>
+</body>
+</html>
