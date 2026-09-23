@@ -4,7 +4,7 @@
 // 他社導入時はこのファイルを差し替える
 // ============================================
 const APP_CONFIG = {
-  companyName: 'Alushe', 
+  companyName: 'Alushe',
 
   // Supabase接続先（全ページ共通）
   supabaseUrl: 'https://kxuzdkwbmxfinmmqqkep.supabase.co',
@@ -52,6 +52,8 @@ const APP_CONFIG = {
     currTarget:    ['アシスタント', 'アルバイト'],                                          // カリキュラム対象者
     teacher:       ['店長', '副店長', 'スタイリスト'],                                      // 担当講師の候補
     salesSettings: ['代表取締役', '管理者', 'FCオーナー', 'マネージャー', '店長'],             // 人事生産性・材料比率の設定
+    evalEditor:    ['代表取締役', '管理者', 'FCオーナー', 'マネージャー', '店長'],             // 人事評価の項目編集
+    evalTarget:    ['店長', '副店長', 'スタイリスト', 'アシスタント', 'アルバイト'],            // 人事評価の対象者
   },
 
   // メニュー（ホーム画面のカードと上部タブはこの順番で表示）
