@@ -51,6 +51,7 @@ const APP_CONFIG = {
     currEditor:    ['代表取締役', '管理者', 'FCオーナー', 'マネージャー', '店長', '副店長', 'スタイリスト'], // カリキュラム編集
     currTarget:    ['アシスタント', 'アルバイト'],                                          // カリキュラム対象者
     teacher:       ['店長', '副店長', 'スタイリスト'],                                      // 担当講師の候補
+    salesSettings: ['代表取締役', '管理者', 'FCオーナー', 'マネージャー', '店長'],             // 人事生産性・材料比率の設定
   },
 
   // メニュー（ホーム画面のカードと上部タブはこの順番で表示）
@@ -137,4 +138,53 @@ function goNav(id) {
   const m = APP_CONFIG.menus.find(function (x) { return x.id === id; });
   if (!m || m.comingSoon) return;
   location.href = m.page ? 'index.html#' + m.page : m.url;
+}
+
+// ===== 共通ヘッダー（1段目：会社名・ログイン情報 / 2段目：共通メニュー） =====
+// 各ページの <body> 先頭に <div id="app-header"></div> を置き、
+// const ME = await initAppHeader(sb, 'sales'); のように呼ぶ
+function injectHeaderStyle() {
+  if (document.getElementById('app-header-style')) return;
+  const st = document.createElement('style');
+  st.id = 'app-header-style';
+  st.textContent =
+    '.app-top-bar{background:#1a1410;color:#e8d5b0;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}' +
+    '.app-top-title{font-family:"Playfair Display",serif;font-size:18px;letter-spacing:2px;cursor:pointer;}' +
+    '.app-top-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}' +
+    '.app-user-badge{font-size:12px;background:rgba(255,255,255,0.1);padding:5px 12px;border-radius:20px;white-space:nowrap;}' +
+    '.app-logout{font-family:"Noto Sans JP",sans-serif;font-size:12px;padding:6px 12px;border-radius:7px;border:1.5px solid #c9a96e;background:transparent;color:#e8d5b0;cursor:pointer;}' +
+    '.nav-tabs{background:white;border-bottom:2px solid #e8d5b0;padding:0 16px;display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch;}' +
+    '.nav-tab{font-family:"Noto Sans JP",sans-serif;font-size:13px;font-weight:500;padding:12px 18px;border:none;background:none;color:#7a6a58;cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent;margin-bottom:-2px;}' +
+    '.nav-tab.active{color:#c9a96e;border-bottom-color:#c9a96e;font-weight:700;}';
+  document.head.appendChild(st);
+}
+
+function appLogout() {
+  localStorage.removeItem('logged_in_id');
+  location.href = 'index.html';
+}
+
+async function initAppHeader(sb, activeId) {
+  injectHeaderStyle();
+  const id = localStorage.getItem('logged_in_id');
+  if (!id) { location.href = 'index.html'; return null; }
+  const { data: me } = await sb.from('students').select('*').eq('id', id).single();
+  if (!me || me.is_active === false) { appLogout(); return null; }
+  // 権限のないページに直接来た場合はホームへ
+  const menu = APP_CONFIG.menus.find(function (m) { return m.id === activeId; });
+  if (menu && !canAccessMenu(menu, me)) { location.href = 'index.html'; return null; }
+  const el = document.getElementById('app-header');
+  if (el) {
+    el.innerHTML =
+      '<div class="app-top-bar">' +
+        '<div class="app-top-title" onclick="goNav(\'home\')">✦ ' + APP_CONFIG.companyName + '</div>' +
+        '<div class="app-top-right">' +
+          '<span class="app-user-badge">🔑 ' + String(me.name).replace(/</g, '&lt;') + (me.position ? ' / ' + me.position : '') + '</span>' +
+          '<button class="app-logout" onclick="appLogout()">ログアウト</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="nav-tabs">' + appNavHtml(activeId, me) + '</div>';
+  }
+  if (menu) document.title = menu.name + ' | ' + APP_CONFIG.companyName;
+  return me;
 }
