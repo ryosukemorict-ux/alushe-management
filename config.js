@@ -190,3 +190,44 @@ async function initAppHeader(sb, activeId) {
   if (menu) document.title = menu.name + ' | ' + APP_CONFIG.companyName;
   return me;
 }
+
+// ===== 添付ファイルをアプリ内で開く（全ページ共通） =====
+// ホーム画面に追加したアプリでは「新しいタブで開く」が効かないことがあるため、
+// 画像・PDFは画面内のビューアで表示する。
+// 使い方：<a href="ファイルURL" class="att-open" data-name="ファイル名">ファイル名</a>
+function openAttachment(url, name) {
+  const lower = (name || url).toLowerCase();
+  const isImage = /\.(jpg|jpeg|png|gif|webp|heic|heif)$/.test(lower);
+  const isPdf = /\.pdf$/.test(lower);
+  const safeUrl = String(url).replace(/"/g, '&quot;');
+  const safeName = String(name || 'ファイル').replace(/</g, '&lt;');
+  let body;
+  if (isImage) {
+    body = '<img src="' + safeUrl + '" style="max-width:100%;max-height:70vh;display:block;margin:0 auto;border-radius:8px">';
+  } else if (isPdf) {
+    body = '<iframe src="' + safeUrl + '" style="width:100%;height:70vh;border:none;border-radius:8px;background:white"></iframe>';
+  } else {
+    body = '<div style="padding:30px 10px;text-align:center;color:#7a6a58;font-size:13px;line-height:1.8">この形式は画面内で表示できません。<br>下の「ダウンロード」から開いてください。</div>';
+  }
+  const ov = document.createElement('div');
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px;';
+  ov.innerHTML =
+    '<div style="background:white;border-radius:14px;padding:14px;max-width:900px;width:100%;max-height:92vh;overflow:auto;">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px">' +
+        '<div style="font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + safeName + '</div>' +
+        '<button type="button" data-close style="font-family:inherit;font-size:13px;padding:6px 14px;border-radius:7px;border:none;background:#1a1410;color:white;cursor:pointer">閉じる</button>' +
+      '</div>' +
+      body +
+      '<div style="text-align:center;margin-top:10px"><a href="' + safeUrl + '" download style="font-size:12px;color:#2980b9">ダウンロード</a></div>' +
+    '</div>';
+  ov.addEventListener('click', function (e) {
+    if (e.target === ov || e.target.hasAttribute('data-close')) ov.remove();
+  });
+  document.body.appendChild(ov);
+}
+document.addEventListener('click', function (e) {
+  const a = e.target.closest && e.target.closest('a.att-open');
+  if (!a) return;
+  e.preventDefault();
+  openAttachment(a.getAttribute('href'), a.getAttribute('data-name'));
+});
