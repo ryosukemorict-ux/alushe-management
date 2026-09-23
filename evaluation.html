@@ -142,7 +142,10 @@ const sb=supabase.createClient(APP_CONFIG.supabaseUrl,APP_CONFIG.supabaseAnon);
 const MONTH_LABELS=['1月','2月','3月'];
 const QUARTER_MONTHS={1:[1,2,3],2:[4,5,6],3:[7,8,9],4:[10,11,12]};
 // 評価対象の役職（config.js の順番）
-const EVAL_TARGET_ROLES=APP_CONFIG.positions.filter(function(p){return APP_CONFIG.roles.evalTarget.includes(p);});
+// config.js が古い版でも止まらないように、設定がなければ標準値を使う
+const EVAL_TARGET_LIST=APP_CONFIG.roles.evalTarget||['店長','副店長','スタイリスト','アシスタント','アルバイト'];
+const EVAL_EDITOR_LIST=APP_CONFIG.roles.evalEditor||['代表取締役','管理者','FCオーナー','マネージャー','店長'];
+const EVAL_TARGET_ROLES=APP_CONFIG.positions.filter(function(p){return EVAL_TARGET_LIST.includes(p);});
 // 店舗売上の目標・結果に含めない役職
 const STORE_SALES_EXCLUDE=['管理者','代表取締役'];
 
@@ -377,7 +380,7 @@ async function saveAllEntries(){
 
 /* ===== 評価項目の編集 ===== */
 let adminItems=[];
-function canEditAdmin(){return !!ME&&APP_CONFIG.roles.evalEditor.includes(ME.position);}
+function canEditAdmin(){return !!ME&&EVAL_EDITOR_LIST.includes(ME.position);}
 
 function openAdminModal(){
   document.getElementById('admin-position').innerHTML=EVAL_TARGET_ROLES.map(function(p){return '<option value="'+esc(p)+'">'+esc(p)+'</option>';}).join('');
