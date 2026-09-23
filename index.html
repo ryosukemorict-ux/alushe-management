@@ -1,11 +1,12 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8"> 
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Alushe</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
 <script src="assignment-history.js"></script>
 <style>
 :root{
@@ -20,15 +21,14 @@ body{background:var(--cream);font-family:'Noto Sans JP',sans-serif;color:var(--d
 @keyframes spin{to{transform:rotate(360deg);}}
 .loading-text{font-size:13px;color:var(--mid);}
 .top-bar{background:var(--dark);color:var(--gold-light);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
-.top-bar-title{font-family:'Playfair Display',serif;font-size:18px;letter-spacing:1px;}
+.top-bar-title{font-family:'Playfair Display',serif;font-size:18px;letter-spacing:2px;}
 .top-bar-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 .user-badge{font-size:12px;background:rgba(255,255,255,0.1);padding:5px 12px;border-radius:20px;white-space:nowrap;}
-.user-badge .position{font-size:10px;color:var(--gold);margin-left:6px;}
 .nav-tabs{background:white;border-bottom:2px solid var(--gold-light);padding:0 16px;display:flex;gap:0;overflow-x:auto;-webkit-overflow-scrolling:touch;}
 .nav-tab{font-family:'Noto Sans JP',sans-serif;font-size:13px;font-weight:500;padding:12px 18px;border:none;background:none;color:var(--mid);cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all 0.15s;}
 .nav-tab:hover{color:var(--dark);}
 .nav-tab.active{color:var(--gold);border-bottom-color:var(--gold);font-weight:700;}
-.page{display:none;padding:20px 16px 80px;max-width:1400px;margin:0 auto;}  
+.page{display:none;padding:20px 16px 80px;max-width:1400px;margin:0 auto;}
 .page.active{display:block;}
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9000;align-items:center;justify-content:center;}
 .modal-overlay.show{display:flex;}
@@ -39,6 +39,8 @@ body{background:var(--cream);font-family:'Noto Sans JP',sans-serif;color:var(--d
 .modal-body{font-size:13px;color:var(--mid);margin-bottom:18px;line-height:1.7;text-align:center;}
 .modal-actions{display:flex;gap:10px;justify-content:center;margin-top:16px;}
 .modal-err{font-size:12px;color:var(--red);text-align:center;min-height:16px;margin-top:4px;}
+.modal-link{text-align:center;margin-top:16px;font-size:12px;color:var(--mid);line-height:1.8;}
+.modal-link a{color:var(--gold);font-weight:700;text-decoration:none;}
 .form-group{margin-bottom:12px;}
 .form-group label{display:block;font-size:12px;color:var(--mid);margin-bottom:4px;}
 .form-inp{font-family:'Noto Sans JP',sans-serif;font-size:14px;padding:9px 12px;border-radius:8px;border:1.5px solid var(--gold-light);outline:none;background:#fdfaf6;width:100%;}
@@ -107,7 +109,6 @@ td.wrap{white-space:normal;min-width:120px;}
 .staff-card-sub{font-size:12px;color:var(--mid);}
 .staff-card-pos{display:inline-block;font-size:11px;padding:2px 8px;border-radius:12px;background:var(--gold-light);color:var(--accent);margin-top:6px;font-weight:500;}
 .staff-card-actions{position:absolute;top:10px;right:10px;display:flex;gap:6px;}
-.pw-section{background:#f5f0eb;border-radius:10px;padding:14px;margin-top:12px;}
 .master-cols{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;}
 .master-col{flex:1;min-width:200px;}
 .master-col-title{font-size:11px;color:var(--soft);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;}
@@ -135,23 +136,17 @@ td.wrap{white-space:normal;min-width:120px;}
 </div>
 
 <div class="top-bar">
-<div class="top-bar-title" style="font-family:'Playfair Display',serif;letter-spacing:2px">✦ Alushe</div>
+  <div class="top-bar-title" id="brand-title"></div>
   <div class="top-bar-right">
-    <span class="user-badge" id="user-badge">👁 閲覧モード</span>
+    <span class="user-badge" id="user-badge">未ログイン</span>
     <button class="btn btn-outline btn-sm" id="auth-btn" onclick="showLoginModal()" style="background:transparent;color:var(--gold-light);border-color:var(--gold)">ログイン</button>
   </div>
 </div>
 
-<div class="nav-tabs" id="nav-tabs" style="display:none">
-  <button class="nav-tab" id="tab-dashboard" onclick="showPage('dashboard')">🏠 ホーム</button>
-  <button class="nav-tab" id="tab-sales" onclick="window.location.href='sales.html'">📊 数値管理</button>
-  <button class="nav-tab" id="tab-meeting" onclick="window.location.href='meeting.html'" style="display:none">📝 会議報告</button>
-  <button class="nav-tab" id="tab-reservation" onclick="window.location.href='next-reservation.html'">📅 次回予約管理</button>
-  <button class="nav-tab" id="tab-staff" onclick="showPage('staff')" style="display:none">👥 人材マスター</button>
-  <button class="nav-tab" id="tab-curriculum" onclick="showPage('curriculum')">📋 カリキュラム進捗</button>
-  <button class="nav-tab" id="tab-task" onclick="window.location.href='task.html'">✅ タスク管理</button>
-</div>
+<!-- 上部タブ：config.js の menus から自動生成 -->
+<div class="nav-tabs" id="nav-tabs" style="display:none"></div>
 
+<!-- ログイン -->
 <div class="modal-overlay" id="login-modal">
   <div class="modal">
     <div class="modal-title">ログイン</div>
@@ -160,8 +155,31 @@ td.wrap{white-space:normal;min-width:120px;}
     <div class="form-group"><label>パスワード</label><input class="form-inp" type="password" id="login-pw" placeholder="パスワードを入力" autocomplete="new-password"></div>
     <div class="modal-err" id="login-err"></div>
     <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal('login-modal')">キャンセル</button>
+      <button class="btn btn-ghost" id="login-cancel" onclick="closeModal('login-modal')">キャンセル</button>
       <button class="btn btn-dark" onclick="doLogin()">ログイン</button>
+    </div>
+    <div class="modal-link">名前が見つからない方は<br><a href="#" onclick="showRegisterModal();return false;">新規登録はこちら</a></div>
+  </div>
+</div>
+
+<!-- 新規登録 -->
+<div class="modal-overlay" id="register-modal">
+  <div class="modal">
+    <div class="modal-title">新規登録</div>
+    <div class="modal-sub">はじめての方は情報を入力してください</div>
+    <div style="display:flex;gap:8px">
+      <div class="form-group" style="flex:1"><label>姓 *</label><input class="form-inp" id="reg-sei" type="text" maxlength="10" autocomplete="off" placeholder="例：田中"></div>
+      <div class="form-group" style="flex:1"><label>名 *</label><input class="form-inp" id="reg-mei" type="text" maxlength="10" autocomplete="off" placeholder="例：花子"></div>
+    </div>
+    <div class="form-group"><label>生年月日 *</label><div style="display:flex;gap:6px"><select class="form-sel" id="reg-birth-y" style="flex:2"></select><select class="form-sel" id="reg-birth-m" style="flex:1"></select><select class="form-sel" id="reg-birth-d" style="flex:1"></select></div></div>
+    <div class="form-group"><label>所属店舗 *</label><select class="form-sel" id="reg-store"></select></div>
+    <div class="form-group"><label>役職 *</label><select class="form-sel" id="reg-position"></select></div>
+    <div class="form-group"><label>パスワード（4文字以上） *</label><input class="form-inp" type="password" id="reg-pw" autocomplete="new-password"></div>
+    <div class="form-group"><label>パスワード（確認） *</label><input class="form-inp" type="password" id="reg-pw2" autocomplete="new-password"></div>
+    <div class="modal-err" id="reg-err"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="backToLogin()">戻る</button>
+      <button class="btn btn-dark" id="reg-btn" onclick="doRegister()">登録してはじめる</button>
     </div>
   </div>
 </div>
@@ -182,41 +200,19 @@ td.wrap{white-space:normal;min-width:120px;}
     <div class="modal-title" id="staff-modal-title">スタッフ追加</div>
     <div style="margin-top:12px">
       <div class="form-group"><label>名前 *</label><input class="form-inp" id="sm-name" type="text" maxlength="20" autocomplete="off" placeholder="例：田中 花子"></div>
-        <div class="form-group"><label>店舗 *</label>
-        <select class="form-sel" id="sm-store" onchange="toggleSmPw()">
-              <option value="エルズ">ailes</option>
-          <option value="soleil">soleil</option>
-          <option value="両店">両店</option>
-        </select>
-      </div>
+      <div class="form-group"><label>店舗 *</label><select class="form-sel" id="sm-store"></select></div>
       <div class="form-group" id="sm-history-section" style="display:none">
-  <label>店舗異動予約</label>
-  <div id="sm-history-list" style="margin-bottom:8px"></div>
-  <div style="display:flex;gap:6px">
-    <input class="form-inp" type="date" id="sm-history-date" style="flex:1">
-    <select class="form-sel" id="sm-history-store" style="flex:1">
-      <option value="エルズ">ailes</option>
-      <option value="soleil">soleil</option>
-    </select>
-    <button class="btn btn-gold btn-xs" onclick="addStoreReservation()">予約追加</button>
-  </div>
-</div>
-      <div class="form-group"><label>役職</label>
-        <select class="form-sel" id="sm-position">
-          <option value="">未設定</option>
-          <option value="代表">代表</option>
-          <option value="店長">店長</option>
-          <option value="チーフ">チーフ</option>
-          <option value="スタイリスト">スタイリスト</option>
-          <option value="Jrスタイリスト">Jrスタイリスト</option>
-          <option value="カラーリスト">カラーリスト</option>
-          <option value="アシスタント">アシスタント</option>
-          <option value="レセプション">レセプション</option>
-          <option value="管理者">管理者</option>
-        </select>
+        <label>店舗異動予約</label>
+        <div id="sm-history-list" style="margin-bottom:8px"></div>
+        <div style="display:flex;gap:6px">
+          <input class="form-inp" type="date" id="sm-history-date" style="flex:1">
+          <select class="form-sel" id="sm-history-store" style="flex:1"></select>
+          <button class="btn btn-gold btn-xs" onclick="addStoreReservation()">予約追加</button>
+        </div>
       </div>
-      <div class="form-group"><label>生年月日</label><div style="display:flex;gap:6px"><select class="form-sel" id="sm-birth-y" style="flex:2"><option value="">年</option></select><select class="form-sel" id="sm-birth-m" style="flex:1"><option value="">月</option></select><select class="form-sel" id="sm-birth-d" style="flex:1"><option value="">日</option></select></div></div>
-      <div class="form-group"><label>入社日</label><div style="display:flex;gap:6px"><select class="form-sel" id="sm-join-y" style="flex:2"><option value="">年</option></select><select class="form-sel" id="sm-join-m" style="flex:1"><option value="">月</option></select><select class="form-sel" id="sm-join-d" style="flex:1"><option value="">日</option></select></div></div>
+      <div class="form-group"><label>役職</label><select class="form-sel" id="sm-position"></select></div>
+      <div class="form-group"><label>生年月日</label><div style="display:flex;gap:6px"><select class="form-sel" id="sm-birth-y" style="flex:2"></select><select class="form-sel" id="sm-birth-m" style="flex:1"></select><select class="form-sel" id="sm-birth-d" style="flex:1"></select></div></div>
+      <div class="form-group"><label>入社日</label><div style="display:flex;gap:6px"><select class="form-sel" id="sm-join-y" style="flex:2"></select><select class="form-sel" id="sm-join-m" style="flex:1"></select><select class="form-sel" id="sm-join-d" style="flex:1"></select></div></div>
       <div class="form-group" id="sm-leavedate-row" style="display:none"><label>退社日（退社処理の場合）</label><input class="form-inp" id="sm-leavedate" type="date"></div>
       <div class="form-group" id="sm-pw-row"><label>パスワード</label><input class="form-inp" id="sm-pw" type="password" placeholder="初期値：2026" autocomplete="new-password"></div>
       <div class="modal-err" id="sm-err"></div>
@@ -233,7 +229,7 @@ td.wrap{white-space:normal;min-width:120px;}
     <div class="modal-title">パスワード変更</div>
     <div class="modal-sub" id="pw-modal-sub"></div>
     <div class="form-group"><label>現在のパスワード</label><input class="form-inp" type="password" id="pw-current" autocomplete="new-password"></div>
-    <div class="form-group"><label>新しいパスワード</label><input class="form-inp" type="password" id="pw-new" autocomplete="new-password"></div>
+    <div class="form-group"><label>新しいパスワード（4文字以上）</label><input class="form-inp" type="password" id="pw-new" autocomplete="new-password"></div>
     <div class="form-group"><label>新しいパスワード（確認）</label><input class="form-inp" type="password" id="pw-confirm" autocomplete="new-password"></div>
     <div class="modal-err" id="pw-err"></div>
     <div class="modal-actions">
@@ -282,14 +278,14 @@ td.wrap{white-space:normal;min-width:120px;}
     <div style="font-size:13px;color:var(--mid)" id="dash-sub"></div>
   </div>
   <div id="func-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px;max-width:480px;margin:0 auto;padding:0 16px"></div>
-  <div style="text-align:center;margin-top:24px">
+  <div style="text-align:center;margin-top:24px" id="pw-btn-wrap">
     <button class="btn btn-outline btn-sm" onclick="showPwModal()">🔑 パスワード変更</button>
   </div>
 </div>
 
 <div class="page" id="page-curriculum">
   <div class="panel" id="curr-viewer-panel">
-    <div style="font-size:10px;letter-spacing:3px;color:var(--gold);margin-bottom:4px">✦ AILES GROUP ✦</div>
+    <div class="company-label" style="font-size:10px;letter-spacing:3px;color:var(--gold);margin-bottom:4px"></div>
     <div class="panel-title">👤 スタッフを選択</div>
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
       <select style="font-family:'Noto Sans JP',sans-serif;font-size:14px;font-weight:600;padding:9px 36px 9px 14px;border-radius:9px;border:2px solid var(--gold);background:white url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2712%27 height=%277%27%3E%3Cpath d=%27M0 0l6 7 6-7z%27 fill=%27%23c9a96e%27/%3E%3C/svg%3E') no-repeat right 12px center;appearance:none;-webkit-appearance:none;outline:none;cursor:pointer;color:var(--dark);min-width:200px" id="viewer-sel" onchange="onViewerChange()"></select>
@@ -305,10 +301,9 @@ td.wrap{white-space:normal;min-width:120px;}
       <button class="btn btn-outline btn-sm" onclick="window.print()">🖨 印刷</button>
     </div>
   </div>
-  <!-- 個人/全体 タブ -->
   <div id="curr-tab-switcher" style="display:none;margin-bottom:16px;gap:10px">
-    <button id="curr-tab-individual" onclick="switchCurrTab('individual')" style="font-family:'Noto Sans JP',sans-serif;font-size:14px;font-weight:700;padding:10px 24px;border-radius:9px;border:2px solid var(--gold);background:var(--gold);color:white;cursor:pointer;">👤 個人</button>
-    <button id="curr-tab-overview" onclick="switchCurrTab('overview')" style="font-family:'Noto Sans JP',sans-serif;font-size:14px;font-weight:700;padding:10px 24px;border-radius:9px;border:2px solid var(--gold);background:white;color:var(--gold);cursor:pointer;">📊 全体</button>
+    <button id="curr-tab-individual" onclick="switchCurrTab('individual')"></button>
+    <button id="curr-tab-overview" onclick="switchCurrTab('overview')"></button>
   </div>
 
   <div id="curr-individual-section">
@@ -357,8 +352,8 @@ td.wrap{white-space:normal;min-width:120px;}
       <tbody id="curr-tbody"></tbody>
     </table>
   </div>
-  <div class="notice" id="curr-notice">👁 閲覧モードです。ログインすると編集できます。</div>
-  </div><!-- end curr-individual-section -->
+  <div class="notice" id="curr-notice">👁 閲覧モードです。</div>
+  </div>
 
   <div id="curr-overview" style="display:none;margin-top:20px">
     <div class="panel">
@@ -374,11 +369,7 @@ td.wrap{white-space:normal;min-width:120px;}
         <select class="filter-sel" id="ov-cat-filter" onchange="renderOverview()">
           <option value="">すべてのカテゴリ</option>
         </select>
-        <select class="filter-sel" id="ov-store-filter" onchange="renderOverview()">
-          <option value="">すべての店舗</option>
-          <option value="エルズ">ailes</option>
-          <option value="soleil">soleil</option>
-        </select>
+        <select class="filter-sel" id="ov-store-filter" onchange="renderOverview()"></select>
       </div>
       <div class="summary">
         <div class="stat"><div class="stat-n" id="ov-total">0</div><div class="stat-l">対象人数</div></div>
@@ -405,24 +396,8 @@ td.wrap{white-space:normal;min-width:120px;}
 <div class="page" id="page-staff">
   <div class="action-bar">
     <button class="btn btn-gold btn-sm" onclick="openStaffModal(null)">＋ スタッフ追加</button>
-    <select class="filter-sel" id="sf-store-filter" onchange="renderStaffPage()">
-      <option value="">すべての店舗</option>
-      <option value="エルズ">ailes</option>
-      <option value="soleil">soleil</option>
-      <option value="両店">両店</option>
-    </select>
-    <select class="filter-sel" id="sf-pos-filter" onchange="renderStaffPage()">
-      <option value="">すべての役職</option>
-      <option value="代表">代表</option>
-      <option value="店長">店長</option>
-      <option value="チーフ">チーフ</option>
-      <option value="スタイリスト">スタイリスト</option>
-      <option value="Jrスタイリスト">Jrスタイリスト</option>
-      <option value="カラーリスト">カラーリスト</option>
-      <option value="アシスタント">アシスタント</option>
-      <option value="レセプション">レセプション</option>
-      <option value="管理者">管理者</option>
-    </select>
+    <select class="filter-sel" id="sf-store-filter" onchange="renderStaffPage()"></select>
+    <select class="filter-sel" id="sf-pos-filter" onchange="renderStaffPage()"></select>
     <label style="font-size:12px;color:var(--mid);display:flex;align-items:center;gap:4px">
       <input type="checkbox" id="sf-show-inactive" onchange="renderStaffPage()"> 退社者も表示
     </label>
@@ -431,31 +406,45 @@ td.wrap{white-space:normal;min-width:120px;}
 </div>
 
 <script>
-const SUPABASE_URL='https://kxuzdkwbmxfinmmqqkep.supabase.co';
-const SUPABASE_ANON='sb_publishable_2JQdW4ZrTUHo8vDBsF829w_82lPC_53';
-const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
-
-const STAFF_EDITOR_ROLES=['代表','管理者','店長','チーフ'];
-const CURR_EDITOR_ROLES=['代表','管理者','店長','チーフ','スタイリスト'];
+// ===== 共通設定（config.js）から取得 =====
+const sb=supabase.createClient(APP_CONFIG.supabaseUrl,APP_CONFIG.supabaseAnon);
+const ROLES=APP_CONFIG.roles;
 const STATS=['未着手','練習中','合格'];
-const POSITIONS=['代表','店長','チーフ','スタイリスト','Jrスタイリスト','カラーリスト','アシスタント','レセプション','管理者'];
 const CAT_COLORS={シャンプー:'#e8d9a0',ドライ:'#f5c6c6',ブロー:'#f5c6d8',カラー:'#f5d9b8',矯正:'#e0e0e0','コテ巻き':'#b8d4f5',ヘッドスパ:'#d4b8f5',カット:'#d9c4b0',パーマ:'#d0d0d0'};
+const TAB_STYLE_ON='font-family:"Noto Sans JP",sans-serif;font-size:14px;font-weight:700;padding:10px 24px;border-radius:9px;border:2px solid var(--gold);background:var(--gold);color:white;cursor:pointer;';
+const TAB_STYLE_OFF='font-family:"Noto Sans JP",sans-serif;font-size:14px;font-weight:700;padding:10px 24px;border-radius:9px;border:2px solid var(--gold);background:white;color:var(--gold);cursor:pointer;';
 
 function hash(s){let h=0;for(let i=0;i<s.length;i++)h=(Math.imul(31,h)+s.charCodeAt(i))|0;return String(h);}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function storeLabel(v){return v==='エルズ'?'ailes':v;}
-function isAdminStore(store){return false;}
-const CURR_TARGET_ROLES=['Jrスタイリスト','カラーリスト','アシスタント'];
-function nonAdminStudents(){return students.filter(function(s){return CURR_TARGET_ROLES.includes(s.position);});}
+function hasRole(key){return !!ME&&(ROLES[key]||[]).includes(ME.position);}
+function nonAdminStudents(){return students.filter(function(s){return ROLES.currTarget.includes(s.position);});}
 
 let students=[],categories=[],curricula=[],progressRows=[];
-let CID=null,ME=null,currentPage='curriculum';
+let CID=null,ME=null,currentPage='dashboard';
 
-function canEditCurriculum(){return ME&&(isAdminStore(ME.store)||CURR_EDITOR_ROLES.includes(ME.position));}
-function isSelfInputRole(){return ME&&CURR_TARGET_ROLES.includes(ME.position);}
+function canEditCurriculum(){return hasRole('currEditor');}
+function isSelfInputRole(){return hasRole('currTarget');}
 function canEditSelf(studentId){return isSelfInputRole()&&ME.id===studentId;}
-function canEditStaff(){return ME&&(isAdminStore(ME.store)||STAFF_EDITOR_ROLES.includes(ME.position));}
-function canViewOverview(){return ME&&(isAdminStore(ME.store)||CURR_EDITOR_ROLES.includes(ME.position));}
+function canEditStaff(){return hasRole('staffEditor');}
+function canViewOverview(){return hasRole('currEditor');}
+
+// ===== 画面の固定部分を config.js から組み立て =====
+function initStaticUI(){
+  document.title=APP_CONFIG.companyName;
+  document.getElementById('brand-title').textContent='✦ '+APP_CONFIG.companyName;
+  document.querySelectorAll('.company-label').forEach(function(el){el.textContent='✦ '+APP_CONFIG.companyName.toUpperCase()+' ✦';});
+  const allOpt='<option value="'+esc(APP_CONFIG.allStoresValue)+'">全店共通</option>';
+  document.getElementById('sm-store').innerHTML=allOpt+storeOptionsHtml('',false);
+  document.getElementById('sm-history-store').innerHTML=storeOptionsHtml('',false);
+  document.getElementById('ov-store-filter').innerHTML=storeOptionsHtml('',true);
+  document.getElementById('sf-store-filter').innerHTML=storeOptionsHtml('',true);
+  document.getElementById('sm-position').innerHTML='<option value="">未設定</option>'+positionOptionsHtml('');
+  document.getElementById('sf-pos-filter').innerHTML='<option value="">すべての役職</option>'+positionOptionsHtml('');
+  document.getElementById('reg-store').innerHTML='<option value="">選択してください</option>'+storeOptionsHtml('',false);
+  document.getElementById('reg-position').innerHTML='<option value="">選択してください</option>'+positionOptionsHtml('',APP_CONFIG.selfRegisterPositions);
+  document.getElementById('curr-tab-individual').textContent='👤 個人';
+  document.getElementById('curr-tab-overview').textContent='📊 全体';
+}
 
 async function loadAll(){
   document.getElementById('loading').style.display='flex';
@@ -466,81 +455,79 @@ async function loadAll(){
       sb.from('curriculum_master').select('*').order('sort_order'),
       sb.from('progress').select('*'),
     ]);
+    if(s.error)throw s.error;
     students=s.data||[];categories=c.data||[];curricula=cu.data||[];progressRows=pr.data||[];
   }catch(e){
     console.error(e);
-    document.getElementById('loading').innerHTML='<div style="color:red;padding:20px">エラー: '+e.message+'</div>';
-    return;
+    document.getElementById('loading').innerHTML='<div style="color:red;padding:20px">エラー: '+esc(e.message)+'</div>';
+    return false;
   }
   document.getElementById('loading').style.display='none';
+  return true;
 }
+
+// ===== 上部タブ（config.js の menus から生成） =====
+function renderNav(){
+  const nav=document.getElementById('nav-tabs');
+  if(!ME){nav.style.display='none';nav.innerHTML='';return;}
+  const active=currentPage==='dashboard'?'home':currentPage;
+  nav.innerHTML=appNavHtml(active,ME);
+  nav.style.display='';
+}
+// このページ内で開くもの（ホーム・人材マスター）
+window.onAppNav=function(id){
+  if(id==='home'){showPage('dashboard');return true;}
+  if(id==='staff'){showPage('staff');return true;}
+  return false;
+};
 
 function showPage(name){
+  if(name==='staff'&&!canEditStaff())name='dashboard';
   currentPage=name;
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
   document.getElementById('page-'+name).classList.add('active');
-  const tabEl=document.getElementById('tab-'+name);
-  if(tabEl)tabEl.classList.add('active');
-  if(name==='dashboard') renderDashboard();
-  if(name==='curriculum') setTimeout(renderCurriculumPage, 50);
-  if(name==='staff') renderStaffPage();
+  renderNav();
+  if(name==='dashboard')renderDashboard();
+  if(name==='curriculum')setTimeout(renderCurriculumPage,50);
+  if(name==='staff')renderStaffPage();
 }
 
-const FUNC_LIST=[
-  {id:'sales',icon:'📊',name:'数値管理',desc:'月次売上・数値の管理',minRole:null,url:'sales.html'},
-  {id:'meeting',icon:'📝',name:'会議報告',desc:'幹部・店舗会議の記録',minRole:'meeting_viewer',url:'meeting.html'},
-  {id:'evaluation',icon:'⭐',name:'人事評価制度',desc:'評価の記録と管理',minRole:null,url:'evaluation.html'},
-  {id:'schedule',icon:'📆',name:'年間スケジュール',desc:'年間の予定管理',minRole:null,url:'schedule.html'},
-  {id:'appointment',icon:'📅',name:'次回予約管理',desc:'次回予約の管理',minRole:null,url:'next-reservation.html',comingSoon:true},
-  {id:'staff',icon:'👥',name:'人材マスター',desc:'スタッフ情報の登録・管理',minRole:'staff_editor'},
-];
-
-function canAccessFunc(func){
-  if(func.comingSoon) return false;
-  if(func.id==='curriculum') return true;
-  if(func.minRole==='staff_editor') return canEditStaff();
-  if(func.minRole==='meeting_viewer') return !!ME && STAFF_EDITOR_ROLES.includes(ME.position);
-  return !!ME;
-}
-
+// ===== ホーム =====
 function renderDashboard(){
-  if(ME){
-    document.getElementById('dash-name').textContent=ME.name;
-    document.getElementById('dash-sub').textContent=(ME.position||ME.store)+' ・ ログイン中';
-  } else {
-    document.getElementById('dash-name').textContent='';
-    document.getElementById('dash-sub').textContent='';
-  }
+  document.getElementById('dash-name').textContent=ME?ME.name:'';
+  document.getElementById('dash-sub').textContent=ME?(ME.position||storeLabel(ME.store))+' ・ ログイン中':'';
+  document.getElementById('pw-btn-wrap').style.display=ME?'':'none';
   const philosophyQuotes=['常に笑顔を忘れない','小さな変化に気づく','感謝を言葉にする','仲間を大切にする','挑戦を止めない','現状維持をしない','学び続ける','人として成長する','お客様目線を忘れない','"また来たい"を本気で作る','必ずありがとうを伝える'];
-const todayQuote=philosophyQuotes[new Date().getDate()%philosophyQuotes.length];
-const philosophyCard='<div style="background:linear-gradient(135deg,#1a1410 0%,#2e241e 100%);border-radius:16px;padding:20px 18px;margin-bottom:16px;text-align:center;cursor:pointer;" onclick="window.location.href=\'philosophy.html\'">'+'<div style="font-size:10px;letter-spacing:3px;color:#c9a96e;margin-bottom:10px">✦ TODAY\'S PHILOSOPHY ✦</div>'+'<div style="font-size:16px;font-weight:700;color:white;line-height:1.6;margin-bottom:12px">「'+todayQuote+'」</div>'+'<div style="font-size:11px;color:#c4b49e;">企業理念を読む →</div>'+'</div>';
-const existing=document.querySelector('.philosophy-card');if(existing)existing.remove();const cardEl=document.createElement('div');cardEl.className='philosophy-card';cardEl.innerHTML=philosophyCard;document.getElementById('func-grid').insertAdjacentElement('beforebegin',cardEl);
+  const todayQuote=philosophyQuotes[new Date().getDate()%philosophyQuotes.length];
+  const philosophyCard='<div style="background:linear-gradient(135deg,#1a1410 0%,#2e241e 100%);border-radius:16px;padding:20px 18px;margin-bottom:16px;text-align:center;cursor:pointer;" onclick="window.location.href=\'philosophy.html\'">'+'<div style="font-size:10px;letter-spacing:3px;color:#c9a96e;margin-bottom:10px">✦ TODAY\'S PHILOSOPHY ✦</div>'+'<div style="font-size:16px;font-weight:700;color:white;line-height:1.6;margin-bottom:12px">「'+esc(todayQuote)+'」</div>'+'<div style="font-size:11px;color:#c4b49e;">企業理念を読む →</div>'+'</div>';
+  const existing=document.querySelector('.philosophy-card');if(existing)existing.remove();
+  const cardEl=document.createElement('div');cardEl.className='philosophy-card';cardEl.innerHTML=philosophyCard;
+  document.getElementById('func-grid').insertAdjacentElement('beforebegin',cardEl);
+
   const grid=document.getElementById('func-grid');
   const card_style='background:white;border:2px solid #e8d5b0;border-radius:14px;padding:22px 12px 18px;text-align:center;transition:all 0.2s;';
   const disabled_style='opacity:0.4;cursor:not-allowed;';
-  grid.innerHTML=FUNC_LIST.map(function(f){
-    const accessible=canAccessFunc(f);
-    const locked=!accessible&&f.minRole;
-    const soon=f.comingSoon;
-    const clickable=accessible&&!soon;
-    let onclick='';
-    if(clickable){
-      if(f.url){onclick='onclick="window.location.href=\''+f.url+'\'"';}
-      else{onclick='onclick="showPage(\''+f.id+'\')"';}
-    }
-    const extra=locked||soon?disabled_style:'cursor:pointer;';
-    return '<div style="'+card_style+extra+'" '+onclick+'>'
-      +'<div style="font-size:36px;margin-bottom:10px">'+f.icon+'</div>'
-      +'<div style="font-size:13px;font-weight:700;color:#1a1410">'+f.name+'</div>'
-      +(soon?'<div style="font-size:10px;color:#c4b49e;margin-top:6px">🔒 準備中</div>':locked?'<div style="font-size:10px;color:#c4b49e;margin-top:6px">🔒 権限なし</div>':'')
+  grid.innerHTML=APP_CONFIG.menus.map(function(m){
+    const soon=!!m.comingSoon;
+    const accessible=canAccessMenu(m,ME);
+    const onclick=accessible?'onclick="goNav(\''+m.id+'\')"':'';
+    return '<div style="'+card_style+(accessible?'cursor:pointer;':disabled_style)+'" '+onclick+'>'
+      +'<div style="font-size:36px;margin-bottom:10px">'+m.icon+'</div>'
+      +'<div style="font-size:13px;font-weight:700;color:#1a1410">'+esc(m.name)+'</div>'
+      +(soon?'<div style="font-size:10px;color:#c4b49e;margin-top:6px">🔒 準備中</div>':!accessible?'<div style="font-size:10px;color:#c4b49e;margin-top:6px">🔒 権限なし</div>':'')
       +'</div>';
   }).join('');
 }
 
+// ===== モーダル共通 =====
 function closeModal(id){document.getElementById(id).classList.remove('show');}
 document.querySelectorAll('.modal-overlay').forEach(function(el){
-  el.addEventListener('click',function(e){if(e.target===el)el.classList.remove('show');});
+  el.addEventListener('click',function(e){
+    if(e.target!==el)return;
+    // 未ログイン時はログイン・新規登録を閉じられないようにする
+    if(!ME&&(el.id==='login-modal'||el.id==='register-modal'))return;
+    el.classList.remove('show');
+  });
 });
 let _cb=null;
 function showConfirm(title,body,cb){
@@ -551,11 +538,17 @@ function showConfirm(title,body,cb){
   document.getElementById('confirm-modal').classList.add('show');
 }
 
+// ===== ログイン =====
 function showLoginModal(){
-  const active=students.filter(function(s){return s.is_active!==false;});
+  const active=students.filter(function(s){return s.is_active!==false;}).slice().sort(function(a,b){
+    const so=storeOrder(a.store)-storeOrder(b.store);if(so!==0)return so;
+    const po=positionOrder(a.position)-positionOrder(b.position);if(po!==0)return po;
+    return a.name<b.name?-1:1;
+  });
   document.getElementById('login-sel').innerHTML=active.map(function(s){return '<option value="'+esc(s.id)+'">'+esc(s.name)+'　['+esc(storeLabel(s.store))+']</option>';}).join('');
   document.getElementById('login-pw').value='';
   document.getElementById('login-err').textContent='';
+  document.getElementById('login-cancel').style.display=ME?'':'none';
   document.getElementById('login-modal').classList.add('show');
   setTimeout(function(){document.getElementById('login-pw').focus();},100);
 }
@@ -566,16 +559,19 @@ function doLogin(){
   const pw=document.getElementById('login-pw').value;
   const s=students.find(function(s){return s.id===id;});
   if(!s){document.getElementById('login-err').textContent='ユーザーが見つかりません';return;}
-    const expectedHash=s.pw_hash||hash('2026');
+  const expectedHash=s.pw_hash||hash('2026');
   if(hash(pw)!==expectedHash){
     document.getElementById('login-err').textContent='パスワードが正しくありません';return;
   }
+  onLoggedIn(s);
+}
+
+function onLoggedIn(s){
   ME=s;
   localStorage.setItem('logged_in_id',s.id);
   closeModal('login-modal');
-  currentPage='dashboard';
+  closeModal('register-modal');
   applyAuth();
-  renderAll();
   showPage('dashboard');
   checkBirthdays(s);
 }
@@ -583,11 +579,63 @@ function doLogin(){
 function doLogout(){
   ME=null;
   localStorage.removeItem('logged_in_id');
-  currentPage='dashboard';
   applyAuth();
-  renderAll();
   showPage('dashboard');
+  showLoginModal();
 }
+
+// ===== 新規登録 =====
+function showRegisterModal(){
+  closeModal('login-modal');
+  ['reg-sei','reg-mei','reg-pw','reg-pw2'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('reg-store').value='';
+  document.getElementById('reg-position').value='';
+  initDateSels('reg-birth',null);
+  document.getElementById('reg-err').textContent='';
+  document.getElementById('register-modal').classList.add('show');
+  setTimeout(function(){document.getElementById('reg-sei').focus();},100);
+}
+function backToLogin(){
+  closeModal('register-modal');
+  showLoginModal();
+}
+async function doRegister(){
+  const err=document.getElementById('reg-err');
+  const sei=document.getElementById('reg-sei').value.trim();
+  const mei=document.getElementById('reg-mei').value.trim();
+  const birthdate=getDateVal('reg-birth');
+  const store=document.getElementById('reg-store').value;
+  const position=document.getElementById('reg-position').value;
+  const pw=document.getElementById('reg-pw').value;
+  const pw2=document.getElementById('reg-pw2').value;
+  if(!sei||!mei){err.textContent='姓と名を入力してください';return;}
+  if(!birthdate){err.textContent='生年月日を選択してください';return;}
+  if(!store){err.textContent='所属店舗を選択してください';return;}
+  if(!position||!APP_CONFIG.selfRegisterPositions.includes(position)){err.textContent='役職を選択してください';return;}
+  if(pw.length<4){err.textContent='パスワードは4文字以上で入力してください';return;}
+  if(pw!==pw2){err.textContent='パスワードが一致しません';return;}
+  const name=sei+' '+mei;
+  if(students.some(function(s){return s.is_active!==false&&s.name===name;})){
+    err.textContent='同じ名前がすでに登録されています。ログイン画面から選択してください';return;
+  }
+  const btn=document.getElementById('reg-btn');btn.disabled=true;
+  const {data,error}=await sb.from('students').insert({name,store,position,birthdate,pw_hash:hash(pw),is_active:true}).select().single();
+  btn.disabled=false;
+  if(error){err.textContent='エラー: '+error.message;return;}
+  students.push(data);
+  await createInitialProgress(data);
+  onLoggedIn(data);
+}
+
+// カリキュラム対象者にだけ進捗行を作る
+async function createInitialProgress(student){
+  if(!ROLES.currTarget.includes(student.position)||!curricula.length)return;
+  const rows=curricula.map(function(c){return {student_id:student.id,curriculum_id:c.id,goal_hours:c.goal_hours||'',teacher:'',planned_start_date:null,start_date:null,exam_date:null,exam_count:0,status:'未着手',score:null,memo:''};});
+  const {data:prData}=await sb.from('progress').insert(rows).select();
+  if(prData)progressRows.push(...prData);
+}
+
+// ===== 誕生日 =====
 function checkBirthdays(loginUser){
   const today=new Date();
   students.filter(function(s){return s.id!==loginUser.id&&s.is_active!==false&&s.birthdate;}).forEach(function(s){
@@ -605,38 +653,30 @@ function checkBirthdays(loginUser){
 function showBirthdayPopup(name,days){
   const el=document.createElement('div');
   el.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:99999;display:flex;align-items:center;justify-content:center;';
-  el.innerHTML='<div style="background:white;border-radius:20px;padding:28px 24px;max-width:320px;width:90%;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,0.2)"><div style="font-size:52px;margin-bottom:12px">🎂</div><div style="font-size:13px;font-weight:700;color:#c9a96e;margin-bottom:6px;letter-spacing:1px">'+(days===0?'今日！':days===1?'明日！':'あと'+days+'日！')+'</div><div style="font-size:20px;font-weight:700;color:#1a1410;margin-bottom:12px">'+name+'さんの誕生日🎉</div><div style="font-size:13px;color:#7a6a58;line-height:1.7;margin-bottom:20px">みんなでお祝いしましょう！<br>素敵な1日になりますように🌸</div><button onclick="this.closest(\'div[style*=fixed]\').remove()" style="background:linear-gradient(135deg,#c9a96e,#8b5e3c);color:white;border:none;border-radius:30px;padding:10px 30px;font-size:14px;font-weight:700;cursor:pointer;font-family:\'Noto Sans JP\',sans-serif;">やったー！</button></div>';
+  el.innerHTML='<div style="background:white;border-radius:20px;padding:28px 24px;max-width:320px;width:90%;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,0.2)"><div style="font-size:52px;margin-bottom:12px">🎂</div><div style="font-size:13px;font-weight:700;color:#c9a96e;margin-bottom:6px;letter-spacing:1px">'+(days===0?'今日！':days===1?'明日！':'あと'+days+'日！')+'</div><div style="font-size:20px;font-weight:700;color:#1a1410;margin-bottom:12px">'+esc(name)+'さんの誕生日🎉</div><div style="font-size:13px;color:#7a6a58;line-height:1.7;margin-bottom:20px">みんなでお祝いしましょう！<br>素敵な1日になりますように🌸</div><button onclick="this.closest(\'div[style*=fixed]\').remove()" style="background:linear-gradient(135deg,#c9a96e,#8b5e3c);color:white;border:none;border-radius:30px;padding:10px 30px;font-size:14px;font-weight:700;cursor:pointer;font-family:\'Noto Sans JP\',sans-serif;">やったー！</button></div>';
   document.body.appendChild(el);
 }
+
 function applyAuth(){
   const badge=document.getElementById('user-badge');
   const btn=document.getElementById('auth-btn');
-  const staffTab=document.getElementById('tab-staff');
-  const meetingTab=document.getElementById('tab-meeting');
-  const navTabs=document.getElementById('nav-tabs');
   if(ME){
     badge.textContent='🔑 '+ME.name+(ME.position?' / '+ME.position:'');
     btn.textContent='ログアウト';
     btn.onclick=doLogout;
-    staffTab.style.display=canEditStaff()?'':'none';
-    meetingTab.style.display=STAFF_EDITOR_ROLES.includes(ME.position)?'':'none';
-    navTabs.style.display='';
   } else {
-    badge.textContent='👁 閲覧モード';
+    badge.textContent='未ログイン';
     btn.textContent='ログイン';
     btn.onclick=showLoginModal;
-    staffTab.style.display='none';
-    meetingTab.style.display='none';
-    navTabs.style.display='none';
   }
+  renderNav();
 }
 
+// ===== パスワード変更 =====
 function showPwModal(){
   if(!ME)return;
   document.getElementById('pw-modal-sub').textContent=ME.name+'さんのパスワードを変更';
-  document.getElementById('pw-current').value='';
-  document.getElementById('pw-new').value='';
-  document.getElementById('pw-confirm').value='';
+  ['pw-current','pw-new','pw-confirm'].forEach(function(id){document.getElementById(id).value='';});
   document.getElementById('pw-err').textContent='';
   document.getElementById('pw-modal').classList.add('show');
 }
@@ -645,10 +685,8 @@ async function doChangePw(){
   const nw=document.getElementById('pw-new').value;
   const cf=document.getElementById('pw-confirm').value;
   const expectedHash=ME.pw_hash||hash('2026');
-  if(hash(cur)!==expectedHash&&!(ME.pw_hash===''&&cur==='2026')){
-    document.getElementById('pw-err').textContent='現在のパスワードが正しくありません';return;
-  }
-  if(!nw){document.getElementById('pw-err').textContent='新しいパスワードを入力してください';return;}
+  if(hash(cur)!==expectedHash){document.getElementById('pw-err').textContent='現在のパスワードが正しくありません';return;}
+  if(nw.length<4){document.getElementById('pw-err').textContent='新しいパスワードは4文字以上で入力してください';return;}
   if(nw!==cf){document.getElementById('pw-err').textContent='新しいパスワードが一致しません';return;}
   const {error}=await sb.from('students').update({pw_hash:hash(nw)}).eq('id',ME.id);
   if(error){document.getElementById('pw-err').textContent='エラー: '+error.message;return;}
@@ -658,28 +696,41 @@ async function doChangePw(){
   alert('パスワードを変更しました。');
 }
 
+// ===== 人材マスター =====
 function renderStaffPage(){
   const storeF=document.getElementById('sf-store-filter').value;
   const posF=document.getElementById('sf-pos-filter').value;
   const showInactive=document.getElementById('sf-show-inactive').checked;
-  const POS_ORDER=['管理者','代表','店長','チーフ','スタイリスト','Jrスタイリスト','カラーリスト','アシスタント','レセプション'];
   let list=students;
   if(!showInactive)list=list.filter(function(s){return s.is_active!==false;});
-  if(storeF)list=list.filter(function(s){return s.store.includes(storeF);});
+  if(storeF)list=list.filter(function(s){return s.store===storeF;});
   if(posF)list=list.filter(function(s){return s.position===posF;});
   list=list.slice().sort(function(a,b){
-    const ai=POS_ORDER.indexOf(a.position||'');
-    const bi=POS_ORDER.indexOf(b.position||'');
-    return (ai===-1?999:ai)-(bi===-1?999:bi);
+    const po=positionOrder(a.position)-positionOrder(b.position);if(po!==0)return po;
+    return storeOrder(a.store)-storeOrder(b.store);
   });
   const grid=document.getElementById('staff-grid');
   if(!list.length){grid.innerHTML='<div style="color:var(--soft);font-size:13px">該当するスタッフがいません</div>';return;}
   grid.innerHTML=list.map(function(s){
-    return '<div class="staff-card'+(s.is_active===false?' inactive':'')+'"><div class="staff-card-actions"><button class="btn btn-outline btn-xs" onclick="openStaffModal(\''+s.id+'\')">編集</button>'+(s.is_active===false?'<button class="btn btn-green btn-xs" onclick="askReactivate(\''+s.id+'\')">復職</button>':'<button class="btn btn-red btn-xs" onclick="askDeactivate(\''+s.id+'\')">退社</button>')+'</div><div class="staff-card-name">'+esc(s.name)+'</div><div class="staff-card-sub">'+esc(storeLabel(s.store))+(s.is_active===false?' ・ <span style="color:var(--red)">退社</span>':'')+'</div>'+(s.position?'<div class="staff-card-pos">'+esc(s.position)+'</div>':'')+'<div style="font-size:11px;color:var(--soft);margin-top:6px">'+(s.birthdate?'生年月日：'+s.birthdate+'<br>':'')+(s.join_date?'入社日：'+s.join_date+'<br>':'')+(s.leave_date?'退社日：'+s.leave_date:'')+'</div></div>';
+    return '<div class="staff-card'+(s.is_active===false?' inactive':'')+'"><div class="staff-card-actions"><button class="btn btn-outline btn-xs" onclick="openStaffModal(\''+s.id+'\')">編集</button>'+(s.is_active===false?'<button class="btn btn-green btn-xs" onclick="askReactivate(\''+s.id+'\')">復職</button>':'<button class="btn btn-red btn-xs" onclick="askDeactivate(\''+s.id+'\')">退社</button>')+'</div><div class="staff-card-name">'+esc(s.name)+'</div><div class="staff-card-sub">'+esc(storeLabel(s.store))+(s.is_active===false?' ・ <span style="color:var(--red)">退社</span>':'')+'</div>'+(s.position?'<div class="staff-card-pos">'+esc(s.position)+'</div>':'')+'<div style="font-size:11px;color:var(--soft);margin-top:6px">'+(s.birthdate?'生年月日：'+esc(s.birthdate)+'<br>':'')+(s.join_date?'入社日：'+esc(s.join_date)+'<br>':'')+(s.leave_date?'退社日：'+esc(s.leave_date):'')+'</div></div>';
   }).join('');
 }
-function initDateSels(prefix,val){const yS=document.getElementById(prefix+'-y'),mS=document.getElementById(prefix+'-m'),dS=document.getElementById(prefix+'-d');const isBirth=prefix==='sm-birth';const yStart=isBirth?1975:2010;const yEnd=isBirth?2020:2040;let yOpts='<option value="">年</option>',mOpts='<option value="">月</option>',dOpts='<option value="">日</option>';for(let y=yStart;y<=yEnd;y++)yOpts+=`<option value="${y}">${y}年</option>`;for(let m=1;m<=12;m++)mOpts+=`<option value="${m}">${m}月</option>`;for(let d=1;d<=31;d++)dOpts+=`<option value="${d}">${d}日</option>`;yS.innerHTML=yOpts;mS.innerHTML=mOpts;dS.innerHTML=dOpts;if(val){const p=val.split('-');yS.value=parseInt(p[0]);mS.value=parseInt(p[1]);dS.value=parseInt(p[2]);}}
-function getDateVal(prefix){const y=document.getElementById(prefix+'-y').value,m=document.getElementById(prefix+'-m').value,d=document.getElementById(prefix+'-d').value;if(!y||!m||!d)return null;return`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;}
+function initDateSels(prefix,val){
+  const yS=document.getElementById(prefix+'-y'),mS=document.getElementById(prefix+'-m'),dS=document.getElementById(prefix+'-d');
+  const isBirth=prefix.indexOf('birth')!==-1;
+  const yStart=isBirth?1960:2010,yEnd=isBirth?2012:2040;
+  let yOpts='<option value="">年</option>',mOpts='<option value="">月</option>',dOpts='<option value="">日</option>';
+  for(let y=yStart;y<=yEnd;y++)yOpts+='<option value="'+y+'">'+y+'年</option>';
+  for(let m=1;m<=12;m++)mOpts+='<option value="'+m+'">'+m+'月</option>';
+  for(let d=1;d<=31;d++)dOpts+='<option value="'+d+'">'+d+'日</option>';
+  yS.innerHTML=yOpts;mS.innerHTML=mOpts;dS.innerHTML=dOpts;
+  if(val){const p=val.split('-');yS.value=parseInt(p[0]);mS.value=parseInt(p[1]);dS.value=parseInt(p[2]);}
+}
+function getDateVal(prefix){
+  const y=document.getElementById(prefix+'-y').value,m=document.getElementById(prefix+'-m').value,d=document.getElementById(prefix+'-d').value;
+  if(!y||!m||!d)return null;
+  return y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+}
 function openStaffModal(id){
   const isNew=!id;
   document.getElementById('staff-modal-title').textContent=isNew?'スタッフ追加':'スタッフ編集';
@@ -687,34 +738,28 @@ function openStaffModal(id){
   document.getElementById('sm-err').textContent='';
   if(isNew){
     document.getElementById('sm-name').value='';
-    document.getElementById('sm-store').value='エルズ';
+    document.getElementById('sm-store').value=APP_CONFIG.stores.length?APP_CONFIG.stores[0].id:'';
     document.getElementById('sm-position').value='';
     initDateSels('sm-birth',null);
     initDateSels('sm-join',null);
     document.getElementById('sm-leavedate').value='';
-    document.getElementById('sm-pw').value='';
-    document.getElementById('sm-pw-row').style.display='';
   } else {
     const s=students.find(function(s){return s.id===id;});if(!s)return;
     document.getElementById('sm-name').value=s.name;
-    document.getElementById('sm-store').value=s.store||'エルズ';
+    document.getElementById('sm-store').value=s.store||'';
     document.getElementById('sm-position').value=s.position||'';
     initDateSels('sm-birth',s.birthdate||null);
     initDateSels('sm-join',s.join_date||null);
     document.getElementById('sm-leavedate').value=s.leave_date||'';
-    document.getElementById('sm-pw').value='';
-    document.getElementById('sm-pw-row').style.display='';
   }
+  document.getElementById('sm-pw').value='';
   document.getElementById('sm-save-btn').dataset.id=id||'';
-toggleSmPw();
-document.getElementById('sm-history-section').style.display=isNew?'none':'';
-if(!isNew)loadStoreHistory(id);
-document.getElementById('staff-modal').classList.add('show');
-
+  document.getElementById('sm-history-section').style.display=isNew?'none':'';
+  if(!isNew)loadStoreHistory(id);
+  document.getElementById('staff-modal').classList.add('show');
   setTimeout(function(){document.getElementById('sm-name').focus();},100);
 }
 
-function toggleSmPw(){}
 let smHistory=[];
 async function loadStoreHistory(studentId){
   const all=await loadAssignmentHistory(sb);
@@ -723,7 +768,8 @@ async function loadStoreHistory(studentId){
 }
 function renderStoreHistory(){
   const wrap=document.getElementById('sm-history-list');
-  const future=smHistory.filter(function(h){return h.effective_from>new Date().toISOString().slice(0,10);})
+  const today=new Date().toISOString().slice(0,10);
+  const future=smHistory.filter(function(h){return h.effective_from>today;})
     .sort(function(a,b){return a.effective_from<b.effective_from?-1:1;});
   if(!future.length){wrap.innerHTML='<div style="font-size:12px;color:var(--soft)">予約なし</div>';return;}
   wrap.innerHTML=future.map(function(h){
@@ -747,7 +793,6 @@ async function deleteStoreReservation(historyId){
   await loadStoreHistory(id);
 }
 
-
 async function saveStaff(){
   const id=document.getElementById('sm-save-btn').dataset.id;
   const name=document.getElementById('sm-name').value.trim();
@@ -758,31 +803,28 @@ async function saveStaff(){
   const leave_date=document.getElementById('sm-leavedate').value||null;
   const pw=document.getElementById('sm-pw').value;
   if(!name){document.getElementById('sm-err').textContent='名前を入力してください';return;}
+  if(!store){document.getElementById('sm-err').textContent='店舗を選択してください';return;}
   if(!id){
     const pw_hash=pw?hash(pw):hash('2026');
     const {data,error}=await sb.from('students').insert({name,store,position,birthdate,join_date,pw_hash,is_active:true}).select().single();
     if(error){document.getElementById('sm-err').textContent='エラー: '+error.message;return;}
     students.push(data);
-    if(!isAdminStore(store)&&curricula.length>0){
-      const rows=curricula.map(function(c){return {student_id:data.id,curriculum_id:c.id,goal_hours:c.goal_hours||'',teacher:'',planned_start_date:null,start_date:null,exam_date:null,exam_count:0,status:'未着手',score:null,memo:''};});
-      const {data:prData}=await sb.from('progress').insert(rows).select();
-      if(prData)progressRows.push(...prData);
-    }
+    await createInitialProgress(data);
   } else {
+    const s=students.find(function(s){return s.id===id;});
+    const prevStore=s?s.store:null;
     const upd={name,store,position,birthdate,join_date,leave_date,is_active:!leave_date};
     if(pw)upd.pw_hash=hash(pw);
     const {error}=await sb.from('students').update(upd).eq('id',id);
     if(error){document.getElementById('sm-err').textContent='エラー: '+error.message;return;}
-    const s=students.find(function(s){return s.id===id;});
-    if(s)Object.assign(s,{name,store,position,birthdate,join_date,leave_date,is_active:!leave_date});
-    if(s&&s.store!==store){
-  const today=new Date().toISOString().slice(0,10);
-  await saveAssignmentChange(sb,id,'store',store,today,null);
-}
+    if(s)Object.assign(s,upd);
+    if(prevStore!==null&&prevStore!==store){
+      const today=new Date().toISOString().slice(0,10);
+      await saveAssignmentChange(sb,id,'store',store,today,null);
+    }
   }
   closeModal('staff-modal');
   renderStaffPage();
-  renderCurriculumPage();
 }
 
 function askDeactivate(id){
@@ -791,7 +833,7 @@ function askDeactivate(id){
     const today=new Date().toISOString().split('T')[0];
     await sb.from('students').update({is_active:false,leave_date:today}).eq('id',id);
     const st=students.find(function(s){return s.id===id;});if(st){st.is_active=false;st.leave_date=today;}
-    renderStaffPage();renderCurriculumPage();
+    renderStaffPage();
   });
 }
 function askReactivate(id){
@@ -799,25 +841,22 @@ function askReactivate(id){
   showConfirm('復職処理','「'+s.name+'」を復職させますか？',async function(){
     await sb.from('students').update({is_active:true,leave_date:null}).eq('id',id);
     const st=students.find(function(s){return s.id===id;});if(st){st.is_active=true;st.leave_date=null;}
-    renderStaffPage();renderCurriculumPage();
+    renderStaffPage();
   });
 }
 
+// ===== カリキュラム（現在メニュー非表示・機能は保持） =====
 function switchCurrTab(tab){
   const individual=document.getElementById('curr-individual-section');
   const overview=document.getElementById('curr-overview');
   const btnI=document.getElementById('curr-tab-individual');
   const btnO=document.getElementById('curr-tab-overview');
   if(tab==='individual'){
-    individual.style.display='';
-    overview.style.display='none';
-    btnI.style.cssText='font-family:"Noto Sans JP",sans-serif;font-size:14px;font-weight:700;padding:10px 24px;border-radius:9px;border:2px solid var(--gold);background:var(--gold);color:white;cursor:pointer;';
-    btnO.style.cssText='font-family:"Noto Sans JP",sans-serif;font-size:14px;font-weight:700;padding:10px 24px;border-radius:9px;border:2px solid var(--gold);background:white;color:var(--gold);cursor:pointer;';
+    individual.style.display='';overview.style.display='none';
+    btnI.style.cssText=TAB_STYLE_ON;btnO.style.cssText=TAB_STYLE_OFF;
   } else {
-    individual.style.display='none';
-    overview.style.display='';
-    btnI.style.cssText='font-family:"Noto Sans JP",sans-serif;font-size:14px;font-weight:700;padding:10px 24px;border-radius:9px;border:2px solid var(--gold);background:white;color:var(--gold);cursor:pointer;';
-    btnO.style.cssText='font-family:"Noto Sans JP",sans-serif;font-size:14px;font-weight:700;padding:10px 24px;border-radius:9px;border:2px solid var(--gold);background:var(--gold);color:white;cursor:pointer;';
+    individual.style.display='none';overview.style.display='';
+    btnI.style.cssText=TAB_STYLE_OFF;btnO.style.cssText=TAB_STYLE_ON;
     renderOverview();
   }
 }
@@ -832,22 +871,16 @@ function renderCurriculumPage(){
   document.getElementById('del-col-th').style.display=editable?'':'none';
   document.getElementById('curr-overview').style.display='none';
   const switcher=document.getElementById('curr-tab-switcher');
-  if(switcher)switcher.style.display=overview?'flex':'none';
-  // Reset to individual tab
+  switcher.style.display=overview?'flex':'none';
   if(overview){
-    const btnI=document.getElementById('curr-tab-individual');
-    const btnO=document.getElementById('curr-tab-overview');
-    if(btnI)btnI.style.cssText='font-family:"Noto Sans JP",sans-serif;font-size:14px;font-weight:700;padding:10px 24px;border-radius:9px;border:2px solid var(--gold);background:var(--gold);color:white;cursor:pointer;';
-    if(btnO)btnO.style.cssText='font-family:"Noto Sans JP",sans-serif;font-size:14px;font-weight:700;padding:10px 24px;border-radius:9px;border:2px solid var(--gold);background:white;color:var(--gold);cursor:pointer;';
-    const ind=document.getElementById('curr-individual-section');
-    if(ind)ind.style.display='';
+    document.getElementById('curr-tab-individual').style.cssText=TAB_STYLE_ON;
+    document.getElementById('curr-tab-overview').style.cssText=TAB_STYLE_OFF;
+    document.getElementById('curr-individual-section').style.display='';
   }
-  const nonMgr=nonAdminStudents().filter(function(s){return s.is_active!==false;});
-  const allActive=nonAdminStudents().filter(function(s){return s.is_active!==false;});
-  const viewerOpts=nonMgr.map(function(s){return '<option value="'+esc(s.id)+'"'+(s.id===CID?' selected':'')+'>'+esc(s.name)+'　['+esc(storeLabel(s.store))+']</option>';}).join('');
-  const adminOpts=allActive.map(function(s){return '<option value="'+esc(s.id)+'"'+(s.id===CID?' selected':'')+'>'+esc(s.name)+'　['+esc(storeLabel(s.store))+']</option>';}).join('');
-  document.getElementById('viewer-sel').innerHTML=viewerOpts||'<option>生徒がいません</option>';
-  document.getElementById('student-sel').innerHTML=adminOpts||'<option>スタッフがいません</option>';
+  const targets=nonAdminStudents().filter(function(s){return s.is_active!==false;});
+  const opts=targets.map(function(s){return '<option value="'+esc(s.id)+'"'+(s.id===CID?' selected':'')+'>'+esc(s.name)+'　['+esc(storeLabel(s.store))+']</option>';}).join('');
+  document.getElementById('viewer-sel').innerHTML=opts||'<option>対象者がいません</option>';
+  document.getElementById('student-sel').innerHTML=opts||'<option>対象者がいません</option>';
   const cf=document.getElementById('ind-cat-filter');
   const cur=cf.value;
   cf.innerHTML='<option value="">すべてのカテゴリ</option>'+categories.map(function(c){return '<option value="'+esc(c.id)+'"'+(c.id===cur?' selected':'')+'>'+esc(c.name)+'</option>';}).join('');
@@ -872,20 +905,22 @@ function getGoalHours(curId){const c=curricula.find(function(c){return c.id===cu
 function statusOpts(val){return STATS.map(function(s){return '<option value="'+esc(s)+'"'+(s===val?' selected':'')+'>'+esc(s)+'</option>';}).join('');}
 function countOpts(val){return [0,1,2,3,4,5,6,7,8,9,10].map(function(n){return '<option value="'+n+'"'+((val||0)==n?' selected':'')+'>'+n+'</option>';}).join('');}
 function teacherOpts(val){
-  const mgrs=students.filter(function(s){return isAdminStore(s.store)&&s.is_active!==false;});
-const TEACHER_ROLES=['スタイリスト','チーフ','店長'];
-const staff=students.filter(function(s){return s.is_active!==false&&TEACHER_ROLES.includes(s.position);});
+  const staff=students.filter(function(s){return s.is_active!==false&&ROLES.teacher.includes(s.position);});
   let o='<option value=""'+(!val?' selected':'')+'>（未定）</option>';
-  if(mgrs.length)o+='<optgroup label="── 管理者 ──">'+mgrs.map(function(m){return '<option value="'+esc(m.name)+'"'+(m.name===val?' selected':'')+'>'+esc(m.name)+'</option>';}).join('')+'</optgroup>';
-  if(staff.length)o+='<optgroup label="── スタッフ ──">'+staff.map(function(m){return '<option value="'+esc(m.name)+'"'+(m.name===val?' selected':'')+'>'+esc(m.name)+'</option>';}).join('')+'</optgroup>';
+  o+=staff.map(function(m){return '<option value="'+esc(m.name)+'"'+(m.name===val?' selected':'')+'>'+esc(m.name)+'</option>';}).join('');
   return o;
 }
 
+function dateCell(r,field,editable,clearFn){
+  if(!editable)return '<span class="plain">'+esc(r[field]||'—')+'</span>';
+  return '<div style="display:flex;align-items:center;gap:3px"><input type="date" class="date-inp" data-id="'+r.id+'" data-f="'+field+'" value="'+esc(r[field]||'')+'">'+(r[field]?'<button onclick="'+clearFn+'(\''+r.id+'\',\''+field+'\',this)" style="background:none;border:none;color:#c4b49e;cursor:pointer;font-size:14px;padding:0 2px">×</button>':'')+'</div>';
+}
+
 function renderCurrTable(){
-const editable=canEditCurriculum();
-const selfEditable=!editable&&canEditSelf(CID);
-  const catF=document.getElementById('ind-cat-filter')?document.getElementById('ind-cat-filter').value:'';
-  const statusF=document.getElementById('ind-status-filter')?document.getElementById('ind-status-filter').value:'';
+  const editable=canEditCurriculum();
+  const selfEditable=!editable&&canEditSelf(CID);
+  const catF=document.getElementById('ind-cat-filter').value;
+  const statusF=document.getElementById('ind-status-filter').value;
   let rows=progressRows.filter(function(r){return r.student_id===CID;});
   rows.sort(function(a,b){
     const cA=categories.find(function(c){return c.id===getCatId(a.curriculum_id);});
@@ -898,37 +933,29 @@ const selfEditable=!editable&&canEditSelf(CID);
   if(catF)rows=rows.filter(function(r){return getCatId(r.curriculum_id)===catF;});
   if(statusF)rows=rows.filter(function(r){return r.status===statusF;});
   const tb=document.getElementById('curr-tbody');
-  if(CID){
-    const vs=document.getElementById('viewer-sel');const as=document.getElementById('student-sel');
-    if(vs)vs.value=CID;if(as)as.value=CID;
-  }
+  if(CID){document.getElementById('viewer-sel').value=CID;document.getElementById('student-sel').value=CID;}
   if(!CID||!rows.length){
-    tb.innerHTML='<tr><td colspan="13" class="empty-td">'+(!CID?'生徒を選択してください':editable?'「＋ 項目を追加」で追加してください':'データがありません')+'</td></tr>';
+    tb.innerHTML='<tr><td colspan="13" class="empty-td">'+(!CID?'対象者を選択してください':editable?'「＋ 項目を追加」で追加してください':'データがありません')+'</td></tr>';
     updateStats([]);return;
   }
+  const canInput=editable||selfEditable;
   tb.innerHTML=rows.map(function(r,i){
-    const catId=getCatId(r.curriculum_id);
-    const cat=categories.find(function(c){return c.id===catId;});
+    const cat=categories.find(function(c){return c.id===getCatId(r.curriculum_id);});
     const catName=cat?cat.name:'';
     const cur=curricula.find(function(c){return c.id===r.curriculum_id;});
     const curName=cur?cur.name:'';
-    const goalH=getGoalHours(r.curriculum_id);
     const cc=CAT_COLORS[catName]||'#f0ece8';
     const catBadge='<span style="display:inline-block;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:500;background:'+cc+'">'+esc(catName)+'</span>';
-    const plannedCell=(editable||selfEditable)?'<div style="display:flex;align-items:center;gap:3px"><input type="date" class="date-inp" data-id="'+r.id+'" data-f="planned_start_date" value="'+esc(r.planned_start_date||'')+'">'+( r.planned_start_date?'<button onclick="clearDate(\''+r.id+'\',\'planned_start_date\',this)" style="background:none;border:none;color:#c4b49e;cursor:pointer;font-size:14px;padding:0 2px">×</button>':'')+'</div>':'<span class="plain">'+esc(r.planned_start_date||'—')+'</span>';
-    const startCell=(editable||selfEditable)?'<div style="display:flex;align-items:center;gap:3px"><input type="date" class="date-inp" data-id="'+r.id+'" data-f="start_date" value="'+esc(r.start_date||'')+'">'+( r.start_date?'<button onclick="clearDate(\''+r.id+'\',\'start_date\',this)" style="background:none;border:none;color:#c4b49e;cursor:pointer;font-size:14px;padding:0 2px">×</button>':'')+'</div>':'<span class="plain">'+esc(r.start_date||'—')+'</span>';
-    const examCell=(editable||selfEditable)?'<div style="display:flex;align-items:center;gap:3px"><input type="date" class="date-inp" data-id="'+r.id+'" data-f="exam_date" value="'+esc(r.exam_date||'')+'">'+( r.exam_date?'<button onclick="clearDate(\''+r.id+'\',\'exam_date\',this)" style="background:none;border:none;color:#c4b49e;cursor:pointer;font-size:14px;padding:0 2px">×</button>':'')+'</div>':'<span class="plain">'+esc(r.exam_date||'—')+'</span>';
-    const countCell=(editable||selfEditable)?'<select class="tbl-sel" data-id="'+r.id+'" data-f="exam_count">'+countOpts(r.exam_count)+'</select>':'<span class="plain">'+(r.exam_count||0)+'</span>';
+    const countCell=canInput?'<select class="tbl-sel" data-id="'+r.id+'" data-f="exam_count">'+countOpts(r.exam_count)+'</select>':'<span class="plain">'+(r.exam_count||0)+'</span>';
     const scoreCell=editable?'<input type="number" class="num-inp" data-id="'+r.id+'" data-f="score" min="0" max="100" placeholder="—" value="'+esc(r.score||'')+'">':'<span class="plain">'+esc(r.score||'—')+'</span>';
     const statusCell=editable?'<select class="tbl-sel s-'+r.status+'" data-id="'+r.id+'" data-f="status">'+statusOpts(r.status)+'</select>':'<span class="plain badge badge-'+r.status+'">'+esc(r.status)+'</span>';
     const teacherCell=editable?'<select class="tbl-sel" data-id="'+r.id+'" data-f="teacher">'+teacherOpts(r.teacher)+'</select>':'<span class="plain">'+esc(r.teacher||'—')+'</span>';
-    const memoCell=(editable||selfEditable)?'<div class="ce" contenteditable="true" data-id="'+r.id+'" data-f="memo">'+esc(r.memo)+'</div>':'<span class="plain">'+esc(r.memo||'—')+'</span>';
+    const memoCell=canInput?'<div class="ce" contenteditable="true" data-id="'+r.id+'" data-f="memo">'+esc(r.memo)+'</div>':'<span class="plain">'+esc(r.memo||'—')+'</span>';
     const delCell=editable?'<button class="del-btn" data-id="'+r.id+'" data-name="'+esc(curName)+'">×</button>':'';
-    return '<tr><td style="color:#c4b49e;font-size:12px;text-align:center">'+(i+1)+'</td><td>'+catBadge+'</td><td><span class="plain">'+esc(curName)+'</span></td><td><span class="plain">'+esc(goalH||'—')+'</span></td><td>'+plannedCell+'</td><td>'+startCell+'</td><td>'+examCell+'</td><td>'+countCell+'</td><td>'+scoreCell+'</td><td>'+statusCell+'</td><td>'+teacherCell+'</td><td class="wrap">'+memoCell+'</td><td>'+delCell+'</td></tr>';
+    return '<tr><td style="color:#c4b49e;font-size:12px;text-align:center">'+(i+1)+'</td><td>'+catBadge+'</td><td><span class="plain">'+esc(curName)+'</span></td><td><span class="plain">'+esc(getGoalHours(r.curriculum_id)||'—')+'</span></td><td>'+dateCell(r,'planned_start_date',canInput,'clearDate')+'</td><td>'+dateCell(r,'start_date',canInput,'clearDate')+'</td><td>'+dateCell(r,'exam_date',canInput,'clearDate')+'</td><td>'+countCell+'</td><td>'+scoreCell+'</td><td>'+statusCell+'</td><td>'+teacherCell+'</td><td class="wrap">'+memoCell+'</td><td>'+delCell+'</td></tr>';
   }).join('');
-  const allRows=progressRows.filter(function(r){return r.student_id===CID;});
-  updateStats(allRows);
-  if(editable||selfEditable){
+  updateStats(progressRows.filter(function(r){return r.student_id===CID;}));
+  if(canInput){
     tb.querySelectorAll('[contenteditable]').forEach(function(el){
       el.addEventListener('blur',function(){updateProgress(el.dataset.id,el.dataset.f,el.innerText.trim());});
       el.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();el.blur();}});
@@ -964,15 +991,7 @@ function updateStats(rows){
 
 async function clearDate(id,field,btn){
   await updateProgress(id,field,null);
-  const wrap=btn.parentElement;
-  const inp=wrap.querySelector('input[type="date"]');
-  if(inp)inp.value='';
-  btn.remove();
-}
-async function clearOvDate(id,field,btn){
-  await updateProgress(id,field,null);
-  const wrap=btn.parentElement;
-  const inp=wrap.querySelector('input[type="date"]');
+  const inp=btn.parentElement.querySelector('input[type="date"]');
   if(inp)inp.value='';
   btn.remove();
 }
@@ -983,7 +1002,8 @@ async function updateProgress(id,field,value){
 
 async function addProgressRow(){
   if(!CID)return;
-  const fc=categories[0];const fcur=curricula.find(function(c){return c.category_id===fc?fc.id:null;});
+  const fc=categories[0];
+  const fcur=fc?curricula.find(function(c){return c.category_id===fc.id;}):null;
   const {data,error}=await sb.from('progress').insert({student_id:CID,curriculum_id:fcur?fcur.id:null,goal_hours:'',teacher:'',planned_start_date:null,start_date:null,exam_date:null,exam_count:0,status:'未着手',score:null,memo:''}).select().single();
   if(error){alert('エラー: '+error.message);return;}
   progressRows.push(data);renderCurrTable();
@@ -997,7 +1017,7 @@ function renderOverview(){
   const ocur=ocf.value;
   ocf.innerHTML='<option value="">すべてのカテゴリ</option>'+categories.map(function(c){return '<option value="'+esc(c.id)+'"'+(c.id===ocur?' selected':'')+'>'+esc(c.name)+'</option>';}).join('');
   let fStudents=nonAdminStudents().filter(function(s){return s.is_active!==false;});
-  if(stF)fStudents=fStudents.filter(function(s){return s.store.includes(stF);});
+  if(stF)fStudents=fStudents.filter(function(s){return s.store===stF;});
   let allRows=[];
   fStudents.forEach(function(s){
     const sRows=progressRows.filter(function(r){return r.student_id===s.id;});
@@ -1008,50 +1028,46 @@ function renderOverview(){
     filtered.forEach(function(r){
       allRows.push({s:s,r:r,catName:(categories.find(function(c){return c.id===getCatId(r.curriculum_id);})||{}).name||'',curName:(curricula.find(function(c){return c.id===r.curriculum_id;})||{}).name||'',total:total,pass:pass,pct:pct});
     });
-    if(!filtered.length&&!sF&&!cF)allRows.push({s:s,r:null,catName:'',curName:'',total:total,pass:pass,pct:pct});
+    if(!filtered.length&&!sF&&!cF)allRows.push({s:s,r:null,total:total,pass:pass,pct:pct});
   });
-  const uq=new Set(allRows.map(function(x){return x.s.id;}));
   document.getElementById('ov-total').textContent=fStudents.length;
   document.getElementById('ov-pass').textContent=new Set(allRows.filter(function(x){return x.r&&x.r.status==='合格';}).map(function(x){return x.s.id;})).size;
   document.getElementById('ov-prog').textContent=new Set(allRows.filter(function(x){return x.r&&x.r.status==='練習中';}).map(function(x){return x.s.id;})).size;
   const tb=document.getElementById('ov-tbody');
   if(!allRows.length){tb.innerHTML='<tr><td colspan="15" class="empty-td">該当データなし</td></tr>';return;}
   tb.innerHTML=allRows.map(function(row){
-    const s=row.s,r=row.r,catName=row.catName,curName=row.curName,total=row.total,pass=row.pass,pct=row.pct;
+    const s=row.s,r=row.r;
     if(!r)return '<tr><td><strong>'+esc(s.name)+'</strong></td><td>'+esc(storeLabel(s.store))+'</td><td>'+esc(s.position||'—')+'</td><td colspan="12" style="text-align:center;color:var(--soft)">データなし</td></tr>';
-    const cc=CAT_COLORS[catName]||'#f0ece8';
-    const catBadge='<span style="display:inline-block;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:500;background:'+cc+'">'+esc(catName)+'</span>';
-    const rid=r.id;
+    const cc=CAT_COLORS[row.catName]||'#f0ece8';
+    const catBadge='<span style="display:inline-block;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:500;background:'+cc+'">'+esc(row.catName)+'</span>';
     return '<tr>'
       +'<td><strong>'+esc(s.name)+'</strong></td>'
       +'<td>'+esc(storeLabel(s.store))+'</td>'
       +'<td>'+esc(s.position||'—')+'</td>'
       +'<td>'+catBadge+'</td>'
-      +'<td>'+esc(curName)+'</td>'
+      +'<td>'+esc(row.curName)+'</td>'
       +'<td>'+esc(getGoalHours(r.curriculum_id)||'—')+'</td>'
-+'<td><div style="display:flex;align-items:center;gap:3px"><input type="date" class="date-inp ov-inp" data-id="'+rid+'" data-f="planned_start_date" value="'+esc(r.planned_start_date||'')+'">'+(r.planned_start_date?'<button onclick="clearOvDate(\''+rid+'\',\'planned_start_date\',this)" style="background:none;border:none;color:#c4b49e;cursor:pointer;font-size:14px;padding:0 2px">×</button>':'')+'</div></td>'
-+'<td><div style="display:flex;align-items:center;gap:3px"><input type="date" class="date-inp ov-inp" data-id="'+rid+'" data-f="start_date" value="'+esc(r.start_date||'')+'">'+(r.start_date?'<button onclick="clearOvDate(\''+rid+'\',\'start_date\',this)" style="background:none;border:none;color:#c4b49e;cursor:pointer;font-size:14px;padding:0 2px">×</button>':'')+'</div></td>'
-+'<td><div style="display:flex;align-items:center;gap:3px"><input type="date" class="date-inp ov-inp" data-id="'+rid+'" data-f="exam_date" value="'+esc(r.exam_date||'')+'">'+(r.exam_date?'<button onclick="clearOvDate(\''+rid+'\',\'exam_date\',this)" style="background:none;border:none;color:#c4b49e;cursor:pointer;font-size:14px;padding:0 2px">×</button>':'')+'</div></td>'
-      +'<td><select class="tbl-sel ov-sel" data-id="'+rid+'" data-f="exam_count">'+countOpts(r.exam_count)+'</select></td>'
-      +'<td><input type="number" class="num-inp ov-inp" data-id="'+rid+'" data-f="score" min="0" max="100" placeholder="—" value="'+esc(r.score||'')+'"></td>'
-      +'<td><select class="tbl-sel s-'+r.status+' ov-sel" data-id="'+rid+'" data-f="status">'+statusOpts(r.status)+'</select></td>'
-      +'<td><select class="tbl-sel ov-sel" data-id="'+rid+'" data-f="teacher">'+teacherOpts(r.teacher)+'</select></td>'
-      +'<td style="white-space:normal;max-width:150px"><div class="ce ov-ce" contenteditable="true" data-id="'+rid+'" data-f="memo">'+esc(r.memo)+'</div></td>'
-      +'<td><div class="prog-wrap"><div class="prog-bg"><div class="prog-fill" style="width:'+pct+'%"></div></div><span style="font-size:11px;color:var(--mid)">'+pass+'/'+total+'</span></div></td>'
+      +'<td>'+dateCell(r,'planned_start_date',true,'clearDate')+'</td>'
+      +'<td>'+dateCell(r,'start_date',true,'clearDate')+'</td>'
+      +'<td>'+dateCell(r,'exam_date',true,'clearDate')+'</td>'
+      +'<td><select class="tbl-sel ov-sel" data-id="'+r.id+'" data-f="exam_count">'+countOpts(r.exam_count)+'</select></td>'
+      +'<td><input type="number" class="num-inp" data-id="'+r.id+'" data-f="score" min="0" max="100" placeholder="—" value="'+esc(r.score||'')+'"></td>'
+      +'<td><select class="tbl-sel s-'+r.status+' ov-sel" data-id="'+r.id+'" data-f="status">'+statusOpts(r.status)+'</select></td>'
+      +'<td><select class="tbl-sel ov-sel" data-id="'+r.id+'" data-f="teacher">'+teacherOpts(r.teacher)+'</select></td>'
+      +'<td style="white-space:normal;max-width:150px"><div class="ce" contenteditable="true" data-id="'+r.id+'" data-f="memo">'+esc(r.memo)+'</div></td>'
+      +'<td><div class="prog-wrap"><div class="prog-bg"><div class="prog-fill" style="width:'+row.pct+'%"></div></div><span style="font-size:11px;color:var(--mid)">'+row.pass+'/'+row.total+'</span></div></td>'
       +'</tr>';
   }).join('');
-
-  // Add event listeners for overview editing
-  tb.querySelectorAll('.ov-sel').forEach(function(el){
+  tb.querySelectorAll('select').forEach(function(el){
     el.addEventListener('change',function(){
       if(el.dataset.f==='status')el.className='tbl-sel s-'+el.value+' ov-sel';
       updateProgress(el.dataset.id,el.dataset.f,el.value);
     });
   });
-  tb.querySelectorAll('.ov-inp').forEach(function(el){
+  tb.querySelectorAll('input[type="number"],input[type="date"]').forEach(function(el){
     el.addEventListener('change',function(){updateProgress(el.dataset.id,el.dataset.f,el.value||null);});
   });
-  tb.querySelectorAll('.ov-ce').forEach(function(el){
+  tb.querySelectorAll('[contenteditable]').forEach(function(el){
     el.addEventListener('blur',function(){updateProgress(el.dataset.id,el.dataset.f,el.innerText.trim());});
     el.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();el.blur();}});
   });
@@ -1117,26 +1133,21 @@ function askDelCur(id,name){
   });
 }
 
-function renderAll(){
-  applyAuth();
-  renderDashboard();
-  if(currentPage==='curriculum') renderCurriculumPage();
-  if(currentPage==='staff') renderStaffPage();
-}
-
+// ===== 起動 =====
 (async function(){
-  await loadAll();
+  initStaticUI();
+  const ok=await loadAll();
+  if(!ok)return;
+  const savedLogin=localStorage.getItem('logged_in_id');
+  if(savedLogin)ME=students.find(function(s){return s.id===savedLogin&&s.is_active!==false;})||null;
+  const targets=nonAdminStudents().filter(function(s){return s.is_active!==false;});
   const saved=localStorage.getItem('last_cid');
-  const savedLogin=localStorage.getItem('logged_in_id');if(savedLogin)ME=students.find(function(s){return s.id===savedLogin;})||null;
-  const nonMgr=nonAdminStudents().filter(function(s){return s.is_active!==false;});
-  if(saved&&nonMgr.find(function(s){return s.id===saved;}))CID=saved;
-  else if(nonMgr.length)CID=nonMgr[0].id;
-  currentPage='dashboard';
+  if(saved&&targets.find(function(s){return s.id===saved;}))CID=saved;
+  else if(targets.length)CID=targets[0].id;
   applyAuth();
-  renderDashboard();
-  renderCurriculumPage();
-  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
-  document.getElementById('page-dashboard').classList.add('active');
+  // 他のページから「人材マスター」で来た場合（index.html#staff）
+  showPage(location.hash==='#staff'&&canEditStaff()?'staff':'dashboard');
+  if(!ME)showLoginModal();
 })();
 </script>
 </body>
