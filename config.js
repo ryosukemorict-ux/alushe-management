@@ -4,7 +4,7 @@
 // 他社導入時はこのファイルを差し替える
 // ============================================
 const APP_CONFIG = {
-  companyName: 'Alushe',
+  companyName: 'Alushe', 
 
   // Supabase接続先（全ページ共通）
   supabaseUrl: 'https://kxuzdkwbmxfinmmqqkep.supabase.co',
