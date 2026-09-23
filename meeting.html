@@ -189,11 +189,11 @@ function targetStores(v){return v==='all'?STORE_IDS:[v];}
 
 function attachListHtml(atts,delCall){
   return (atts||[]).map(function(a,i){
-    return '<div class="att-row"><a href="'+esc(a.url)+'" target="_blank">'+esc(a.name)+'</a><button type="button" class="btn btn-outline btn-xs" onclick="'+delCall(i)+'">削除</button></div>';
+    return '<div class="att-row"><a class="att-open" href="'+esc(a.url)+'" data-name="'+esc(a.name)+'">'+esc(a.name)+'</a><button type="button" class="btn btn-outline btn-xs" onclick="'+delCall(i)+'">削除</button></div>';
   }).join('');
 }
 function attachLinksHtml(atts){
-  return (atts&&atts.length)?'<div class="iv-label">添付ファイル</div><div class="iv-body">'+atts.map(function(a){return '<a class="att-link" href="'+esc(a.url)+'" target="_blank">'+esc(a.name)+'</a>';}).join('')+'</div>':'';
+  return (atts&&atts.length)?'<div class="iv-label">添付ファイル</div><div class="iv-body">'+atts.map(function(a){return '<a class="att-link att-open" href="'+esc(a.url)+'" data-name="'+esc(a.name)+'">'+esc(a.name)+'</a>';}).join('')+'</div>':'';
 }
 async function uploadAttachments(fileList){
   const out=[];
