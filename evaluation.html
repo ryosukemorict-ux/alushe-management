@@ -3,37 +3,29 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>人事評価 | ailes group</title> 
+<title>人事評価制度</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
 <style>
 :root{--cream:#faf6f0;--gold:#c9a96e;--gold-light:#e8d5b0;--dark:#1a1410;--mid:#7a6a58;--soft:#c4b49e;--accent:#8b5e3c;--green:#4a7c59;--red:#c0392b;--blue:#2980b9;}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--cream);font-family:'Noto Sans JP',sans-serif;color:var(--dark);min-height:100vh;}
-.top-bar{background:var(--dark);color:var(--gold-light);padding:12px 20px;display:flex;align-items:center;gap:12px;}
-.top-bar-title{font-family:'Playfair Display',serif;font-size:18px;letter-spacing:2px;}
-.nav-bar{background:white;border-bottom:2px solid var(--gold-light);padding:0 16px;display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch;}
-.nav-btn{font-size:13px;font-weight:500;padding:12px 18px;border:none;background:none;color:var(--mid);cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent;margin-bottom:-2px;}
-.nav-btn.active{color:var(--gold);border-bottom-color:var(--gold);font-weight:700;}
 .main{max-width:900px;margin:0 auto;padding:20px 16px 80px;}
-.panel{background:white;border:1px solid var(--gold-light);border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,0.04);}
-.top-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+/* 3段目：このページの項目 */
+.sub-bar{background:white;border:1px solid var(--gold-light);border-radius:12px;padding:14px 16px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,0.04);}
+.top-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
 .sel{font-family:'Noto Sans JP',sans-serif;font-size:13px;padding:8px 28px 8px 10px;border-radius:8px;border:1.5px solid var(--gold-light);outline:none;cursor:pointer;background:white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%237a6a58'/%3E%3C/svg%3E") no-repeat right 8px center;appearance:none;-webkit-appearance:none;color:var(--dark);}
-.store-tabs{display:flex;gap:8px;margin-bottom:12px;}
+.sub-btn{font-family:'Noto Sans JP',sans-serif;font-size:12px;padding:7px 14px;border-radius:7px;border:1.5px solid var(--gold-light);background:white;color:var(--mid);cursor:pointer;}
+.sub-btn:hover{border-color:var(--gold);color:var(--gold);}
+.store-tabs{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
 .store-tab{font-family:'Noto Sans JP',sans-serif;font-size:13px;font-weight:700;padding:8px 18px;border-radius:20px;border:2px solid var(--gold-light);background:white;color:var(--mid);cursor:pointer;}
 .store-tab.active{background:var(--gold);color:white;border-color:var(--gold);}
 .btn{font-family:'Noto Sans JP',sans-serif;font-size:13px;font-weight:600;padding:9px 16px;border-radius:8px;border:none;cursor:pointer;}
 .btn-dark{background:var(--dark);color:white;}
-.btn-gold{background:var(--gold);color:white;}
 .btn-outline{background:white;color:#3a3028;border:1.5px solid var(--soft);}
 .btn-sm{padding:6px 12px;font-size:12px;}
 .row-list{display:flex;flex-direction:column;gap:6px;}
-.staff-row{display:flex;align-items:center;gap:10px;background:white;border:1px solid var(--gold-light);border-radius:10px;padding:10px 14px;cursor:pointer;}
-.staff-row:active{background:#fdfaf6;}
-.staff-row .name{font-size:14px;font-weight:700;flex:1;}
-.staff-row .pos{font-size:10px;color:var(--accent);background:var(--gold-light);padding:2px 8px;border-radius:10px;}
-.staff-row .store{font-size:10px;color:var(--soft);}
-.staff-row .score{font-size:16px;font-weight:700;color:var(--gold);min-width:52px;text-align:right;}
 .staff-row-wrap{background:white;border:1px solid var(--gold-light);border-radius:10px;cursor:pointer;overflow:hidden;}
 .staff-row-wrap:active{background:#fdfaf6;}
 .staff-row-body{display:flex;align-items:stretch;}
@@ -47,10 +39,6 @@ body{background:var(--cream);font-family:'Noto Sans JP',sans-serif;color:var(--d
 .crit-line-name{width:240px;flex-shrink:0;color:var(--dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .crit-line-nums{flex:1;color:var(--mid);}
 .crit-line-score{width:44px;text-align:right;font-weight:700;color:var(--dark);}
-.month-badge{display:inline-block;font-size:10px;color:var(--mid);background:#f0ece5;padding:2px 7px;border-radius:8px;margin-right:4px;}
-.month-badge.hit{color:var(--accent);background:var(--gold-light);font-weight:700;}
-.month-badge{display:inline-block;font-size:10px;color:var(--mid);background:#f0ece5;padding:2px 7px;border-radius:8px;margin-right:4px;}
-.month-badge.hit{color:var(--accent);background:var(--gold-light);font-weight:700;}
 .store-sales-line{display:flex;align-items:stretch;gap:10px;padding:6px 0;border-top:1px dashed #f0e5d5;}
 .store-sales-line:first-of-type{border-top:none;}
 .store-sales-name{width:150px;flex-shrink:0;font-size:11.5px;color:var(--dark);align-self:flex-start;padding-top:4px;}
@@ -68,8 +56,6 @@ body{background:var(--cream);font-family:'Noto Sans JP',sans-serif;color:var(--d
 .score-cell{width:90px;flex-shrink:0;background:var(--dark);color:var(--gold-light);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:28px;font-weight:700;line-height:1.5;text-align:center;gap:2px;}
 .score-cell::before{content:"合計";font-size:11px;font-weight:400;color:var(--soft);}
 .empty-msg{text-align:center;color:var(--soft);padding:30px;font-size:13px;}
-.locked{text-align:center;padding:60px 20px;color:var(--mid);font-size:14px;}
-.admin-row{display:flex;justify-content:flex-end;margin-bottom:10px;gap:8px;}
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9000;align-items:center;justify-content:center;}
 .modal-overlay.show{display:flex;}
 .modal{background:white;border-radius:16px;padding:22px;max-width:460px;width:92%;max-height:88vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.2);}
@@ -90,26 +76,20 @@ body{background:var(--cream);font-family:'Noto Sans JP',sans-serif;color:var(--d
 .crit-score{font-weight:700;color:var(--dark);font-size:14px;}
 .field{margin-bottom:12px;}
 .field label{display:block;font-size:11.5px;color:var(--mid);margin-bottom:4px;font-weight:600;}
-.inp,.txt{font-family:'Noto Sans JP',sans-serif;font-size:13px;padding:8px 10px;border-radius:8px;border:1.5px solid var(--gold-light);outline:none;background:#fdfaf6;width:100%;}
-.txt{resize:vertical;min-height:70px;font-family:monospace;font-size:11px;}
+.inp{font-family:'Noto Sans JP',sans-serif;font-size:13px;padding:8px 10px;border-radius:8px;border:1.5px solid var(--gold-light);outline:none;background:#fdfaf6;width:100%;}
 .admin-item{border:1px solid var(--gold-light);border-radius:10px;padding:10px;margin-bottom:8px;position:relative;background:#fdfaf6;}
 .admin-item .del{position:absolute;top:8px;right:8px;background:none;border:none;color:var(--soft);font-size:16px;cursor:pointer;}
 .save-row{display:flex;justify-content:flex-end;gap:8px;margin-top:14px;}
 </style>
 </head>
 <body>
-<div class="top-bar"><div class="top-bar-title">✦ ailes group</div></div>
-<div class="nav-bar">
-  <button class="nav-btn" onclick="window.location.href='index.html'">🏠 ホーム</button>
-  <button class="nav-btn" onclick="window.location.href='meeting.html'">📋 会議報告</button>
-  <button class="nav-btn" onclick="window.location.href='sales.html'">📊 数値管理</button>
-  <button class="nav-btn" onclick="window.location.href='schedule.html'">📆 年間スケジュール</button>
-  <button class="nav-btn active">🏅 人事評価</button>
-</div>
+<!-- 1段目・2段目：共通ヘッダー（config.js） -->
+<div id="app-header"></div>
 
 <div class="main" id="app-wrap" style="display:none">
-  <div class="panel">
-    <div class="top-controls" style="margin-bottom:10px">
+  <!-- 3段目：人事評価の項目 -->
+  <div class="sub-bar">
+    <div class="top-controls">
       <select class="sel" id="ev-year" onchange="loadListView()"></select>
       <select class="sel" id="ev-quarter" onchange="loadListView()">
         <option value="1">第1四半期（1〜3月）</option>
@@ -117,25 +97,14 @@ body{background:var(--cream);font-family:'Noto Sans JP',sans-serif;color:var(--d
         <option value="3">第3四半期（7〜9月）</option>
         <option value="4">第4四半期（10〜12月）</option>
       </select>
+      <select class="sel" id="ev-pos-filter" onchange="loadListView()"></select>
+      <button class="sub-btn" id="admin-btn" onclick="openAdminModal()" style="display:none">⚙️ 評価項目を編集（役職ごと）</button>
     </div>
-      <div class="store-tabs">
-      <button class="store-tab active" id="tab-all" onclick="switchStore('all')">全店舗</button>
-      <button class="store-tab" id="tab-ailes" onclick="switchStore('エルズ')">ailes</button>
-      <button class="store-tab" id="tab-soleil" onclick="switchStore('soleil')">soleil</button>
-    </div>
-    <select class="sel" id="ev-pos-filter" onchange="loadListView()">
-      <option value="">すべての役職</option>
-    </select>
-  </div>
-
-  <div class="admin-row" id="admin-row" style="display:none">
-    <button class="btn btn-outline btn-sm" onclick="openAdminModal()">⚙️ 評価項目を編集（役職ごと）</button>
+    <div class="store-tabs" id="store-tabs" style="margin-bottom:0"></div>
   </div>
 
   <div class="row-list" id="row-list"></div>
 </div>
-
-<div class="locked" id="locked-view" style="display:none"></div>
 
 <div class="modal-overlay" id="detail-modal">
   <div class="modal">
@@ -155,7 +124,7 @@ body{background:var(--cream);font-family:'Noto Sans JP',sans-serif;color:var(--d
 
 <div class="modal-overlay" id="admin-modal">
   <div class="modal">
-    <div class="modal-title" id="admin-modal-title">評価項目を編集</div>
+    <div class="modal-title">評価項目を編集</div>
     <div class="field"><label>対象役職</label>
       <select class="inp" id="admin-position" onchange="renderAdminList()"></select>
     </div>
@@ -169,31 +138,26 @@ body{background:var(--cream);font-family:'Noto Sans JP',sans-serif;color:var(--d
 </div>
 
 <script>
-const SUPABASE_URL='https://kxuzdkwbmxfinmmqqkep.supabase.co';
-const SUPABASE_ANON='sb_publishable_2JQdW4ZrTUHo8vDBsF829w_82lPC_53';
-const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
-const ADMIN_ROLES=['代表','管理者','店長','チーフ'];
+const sb=supabase.createClient(APP_CONFIG.supabaseUrl,APP_CONFIG.supabaseAnon);
 const MONTH_LABELS=['1月','2月','3月'];
 const QUARTER_MONTHS={1:[1,2,3],2:[4,5,6],3:[7,8,9],4:[10,11,12]};
-const EVAL_TARGET_ROLES=['店長','チーフ','スタイリスト','Jrスタイリスト','カラーリスト','アシスタント','レセプション'];
-const POS_ORDER=['店長','チーフ','スタイリスト','Jrスタイリスト','カラーリスト','アシスタント','レセプション'];
+// 評価対象の役職（config.js の順番）
+const EVAL_TARGET_ROLES=APP_CONFIG.positions.filter(function(p){return APP_CONFIG.roles.evalTarget.includes(p);});
+// 店舗売上の目標・結果に含めない役職
+const STORE_SALES_EXCLUDE=['管理者','代表取締役'];
 
 let students=[],ME=null,allCriteria=[],currentCriteria=[],entries={},currentStore='all',currentSid=null,currentDetailStore=null,currentDetailYear=null;
 
-function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function storeLabel(v){return v==='エルズ'?'ailes':v;}
-function storeLabel(v){return v==='エルズ'?'ailes':v;}
-function storeShortCode(storeJP){return storeJP==='エルズ'?'ailes':'soleil';}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// ===== 店舗売上（数値管理と連動） =====
 let storeSalesCache={};
-async function getStoreSalesMonth(storeJP,year,month){
+async function getStoreSalesMonth(storeId,year,month){
   const monthStr=year+'-'+String(month).padStart(2,'0');
-  const cacheKey=storeJP+'_'+monthStr;
+  const cacheKey=storeId+'_'+monthStr;
   if(storeSalesCache[cacheKey])return storeSalesCache[cacheKey];
-  const {data:allStudents}=await sb.from('students').select('id,position,store').eq('is_active',true);
-  const staffList=(allStudents||[]).filter(function(s){return (s.store===storeJP||s.store==='両店')&&s.position!=='管理者'&&s.position!=='代表';});
+  const staffList=students.filter(function(s){return s.store===storeId&&!STORE_SALES_EXCLUDE.includes(s.position);});
   const staffIds=staffList.map(function(s){return s.id;});
-  const {data:allocData}=await sb.from('sales_allocation').select('*').eq('month',monthStr).maybeSingle();
-  const alloc=allocData||{ailes_pct:50,soleil_pct:50};
   const {data:prodData}=await sb.from('role_productivity').select('*').lte('month',monthStr).order('month',{ascending:false});
   const roleMap={};
   (prodData||[]).forEach(function(r){if(!(r.position in roleMap))roleMap[r.position]=Number(r.monthly_target)||0;});
@@ -202,15 +166,10 @@ async function getStoreSalesMonth(storeJP,year,month){
     const {data}=await sb.from('sales_data').select('*').in('student_id',staffIds).eq('month',monthStr);
     salesRows=data||[];
   }
-  const shortCode=storeShortCode(storeJP);
   let target=0,result=0;
   staffList.forEach(function(s){
-    const isRyoten=s.store==='両店';
-    const pct=isRyoten?((storeJP==='エルズ'?(alloc.ailes_pct||50):(alloc.soleil_pct||50))/100):1;
-    target+=Math.round((roleMap[s.position]||0)*pct);
-    let row;
-    if(isRyoten)row=salesRows.find(function(r){return r.student_id===s.id&&r.store===shortCode;});
-    else row=salesRows.find(function(r){return r.student_id===s.id&&!r.store;});
+    target+=roleMap[s.position]||0;
+    const row=salesRows.find(function(r){return r.student_id===s.id;});
     if(row)result+=Number(row.meimei_sales||0)+Number(row.free_sales||0)+Number(row.tanden||0);
   });
   const out={target:Math.floor(target),result:Math.floor(result)};
@@ -219,46 +178,64 @@ async function getStoreSalesMonth(storeJP,year,month){
 }
 
 function yearOptions(){
-  const sel=document.getElementById('ev-year');
   const now=new Date().getFullYear();
   let opts='';
-  for(let y=now-1;y<=now+1;y++){opts+='<option value="'+y+'"'+(y===now?' selected':'')+'>'+y+'年</option>';}
-  sel.innerHTML=opts;
-}
-function currentQuarterGuess(){
-  const m=new Date().getMonth()+1;
-  return Math.ceil(m/3);
+  for(let y=now-1;y<=now+1;y++)opts+='<option value="'+y+'"'+(y===now?' selected':'')+'>'+y+'年</option>';
+  document.getElementById('ev-year').innerHTML=opts;
 }
 
-function switchStore(store){
-  currentStore=store;
-  document.querySelectorAll('.store-tab').forEach(function(t){t.classList.remove('active');});
-  document.getElementById(store==='all'?'tab-all':(store==='エルズ'?'tab-ailes':'tab-soleil')).classList.add('active');
-  loadListView();
+function renderStoreTabs(){
+  let h='<button class="store-tab'+(currentStore==='all'?' active':'')+'" onclick="switchStore(\'all\')">全店舗</button>';
+  APP_CONFIG.stores.forEach(function(s){
+    h+='<button class="store-tab'+(currentStore===s.id?' active':'')+'" onclick="switchStore(\''+esc(s.id)+'\')">'+esc(s.label)+'</button>';
+  });
+  document.getElementById('store-tabs').innerHTML=h;
 }
+function switchStore(store){currentStore=store;renderStoreTabs();loadListView();}
 
 function sortedTargetStudents(){
   let list=students.filter(function(s){return EVAL_TARGET_ROLES.includes(s.position);});
-  if(currentStore!=='all')list=list.filter(function(s){return s.store===currentStore||s.store==='両店';});
+  if(currentStore!=='all')list=list.filter(function(s){return s.store===currentStore;});
   const posF=document.getElementById('ev-pos-filter').value;
   if(posF)list=list.filter(function(s){return s.position===posF;});
-  list.sort(function(a,b){
-    const ai=POS_ORDER.indexOf(a.position||'');
-    const bi=POS_ORDER.indexOf(b.position||'');
-    return (ai===-1?999:ai)-(bi===-1?999:bi);
+  return list.sort(function(a,b){
+    const po=positionOrder(a.position)-positionOrder(b.position);if(po!==0)return po;
+    return storeOrder(a.store)-storeOrder(b.store);
   });
-  return list;
+}
+
+function scoreForRate(rate,scaleJson){
+  const scale=(scaleJson||[]).slice().sort(function(a,b){return a[0]-b[0];});
+  let pts=0;
+  for(const pair of scale){if(rate>=pair[0])pts=pair[1];}
+  return pts;
+}
+function rateFor(c,targetSum,resultSum,hasTarget){
+  if(c.calc_type==='inverse_count')return hasTarget?Math.max(0,1-(resultSum/(targetSum||1))):0;
+  return targetSum>0?(resultSum/targetSum):0;
+}
+
+// 店舗売上連動の月別ボックス
+async function storeSalesBlock(storeId,year,months){
+  let targetSum=0,resultSum=0;
+  const cols=[];
+  for(const m of months){
+    const d=await getStoreSalesMonth(storeId,year,m);
+    targetSum+=d.target;resultSum+=d.result;
+    const hit=d.target>0&&d.result>=d.target;
+    cols.push('<div class="month-col'+(hit?' hit':'')+'"><div class="month-col-label">'+m+'月</div><div class="month-col-target">目標 '+d.target.toLocaleString()+'</div><div class="month-col-result">'+d.result.toLocaleString()+'</div></div>');
+  }
+  const rate=targetSum>0?resultSum/targetSum:0;
+  const html='<div class="month-cols">'+cols.join('')+'<div class="total-col"><div class="total-col-label">3か月合計</div><div class="total-col-nums">'+targetSum.toLocaleString()+'→'+resultSum.toLocaleString()+'</div><div class="total-col-rate">'+Math.round(rate*100)+'%</div></div></div>';
+  return {rate:rate,html:html};
 }
 
 async function loadListView(){
   const year=Number(document.getElementById('ev-year').value);
-  const quarter=Number(document.getElementById('ev-quarter').value);
-  const months=QUARTER_MONTHS[quarter];
+  const months=QUARTER_MONTHS[Number(document.getElementById('ev-quarter').value)];
   const list=sortedTargetStudents();
-
   const {data:critData}=await sb.from('eval_criteria').select('*').eq('is_active',true).order('sort_order');
   allCriteria=critData||[];
-
   const ids=list.map(function(s){return s.id;});
   let entryData=[];
   if(ids.length){
@@ -268,37 +245,18 @@ async function loadListView(){
   const entryMap={};
   entryData.forEach(function(r){entryMap[r.student_id+'_'+r.criteria_id+'_'+r.month]=r;});
 
-    const wrap=document.getElementById('row-list');
+  const wrap=document.getElementById('row-list');
   if(!list.length){wrap.innerHTML='<div class="empty-msg">対象スタッフがいません</div>';return;}
   const rowsHtml=await Promise.all(list.map(async function(s){
     const crit=allCriteria.filter(function(c){return c.position===s.position;});
     let total=0;
-    const critLinesArr=[];
+    const lines=[];
     for(const c of crit){
-                        if(c.data_source==='store_sales'){
-            let targetSum=0,resultSum=0;
-            const monthCols=[];
-            for(const m of months){
-              const monthData=await getStoreSalesMonth(s.store,year,m);
-              targetSum+=monthData.target;
-              resultSum+=monthData.result;
-              const hit=monthData.target>0&&monthData.result>=monthData.target;
-              monthCols.push('<div class="month-col'+(hit?' hit':'')+'">'
-                +'<div class="month-col-label">'+m+'月</div>'
-                +'<div class="month-col-target">目標 '+monthData.target.toLocaleString()+'</div>'
-                +'<div class="month-col-result">'+monthData.result.toLocaleString()+'</div>'
-                +'</div>');
-            }
-            const rate=targetSum>0?(resultSum/targetSum):0;
-            const score=scoreForRate(rate,c.scale_json);
-            total+=score*Number(c.weight||0);
-                  critLinesArr.push('<div class="store-sales-line">'
-          +'<div class="store-sales-name">'+esc(c.name).replace(/（/,'<br>（')+'</div>'
-              +'<div class="month-cols">'+monthCols.join('')
-              +'<div class="total-col"><div class="total-col-label">3か月合計</div><div class="total-col-nums">'+targetSum.toLocaleString()+'→'+resultSum.toLocaleString()+'</div><div class="total-col-rate">'+Math.round(rate*100)+'%</div></div>'
-              +'</div>'
-              +'<div class="store-sales-score">'+score+'点</div>'
-              +'</div>');
+      if(c.data_source==='store_sales'){
+        const b=await storeSalesBlock(s.store,year,months);
+        const score=scoreForRate(b.rate,c.scale_json);
+        total+=score*Number(c.weight||0);
+        lines.push('<div class="store-sales-line"><div class="store-sales-name">'+esc(c.name).replace(/（/,'<br>（')+'</div>'+b.html+'<div class="store-sales-score">'+score+'点</div></div>');
       } else {
         let targetSum=0,resultSum=0,hasTarget=false;
         months.forEach(function(m){
@@ -306,37 +264,16 @@ async function loadListView(){
           if(e&&e.target!=null){hasTarget=true;targetSum+=Number(e.target||0);}
           resultSum+=Number(e&&e.result||0);
         });
-        let rate=0;
-        if(c.calc_type==='inverse_count'){rate=hasTarget?Math.max(0,1-(resultSum/(targetSum||1))):0;}
-        else{rate=targetSum>0?(resultSum/targetSum):0;}
-        const score=scoreForRate(rate,c.scale_json);
+        const score=scoreForRate(rateFor(c,targetSum,resultSum,hasTarget),c.scale_json);
         total+=score*Number(c.weight||0);
-                            critLinesArr.push('<div class="crit-line">'
-              +'<div class="crit-line-name">'+esc(c.name)+'</div>'
-              +'<div class="crit-line-nums">目標 '+targetSum.toLocaleString()+' ／ 結果 '+resultSum.toLocaleString()+'</div>'
-              +'<div class="crit-line-score">'+score+'点</div>'
-              +'</div>');
+        lines.push('<div class="crit-line"><div class="crit-line-name">'+esc(c.name)+'</div><div class="crit-line-nums">目標 '+targetSum.toLocaleString()+' ／ 結果 '+resultSum.toLocaleString()+'</div><div class="crit-line-score">'+score+'点</div></div>');
       }
     }
-    return '<div class="staff-row-wrap" onclick="openDetail(\''+s.id+'\')">'
-      +'<div class="staff-row-body">'
-      +'<div class="staff-row-left">'
+    return '<div class="staff-row-wrap" onclick="openDetail(\''+s.id+'\')"><div class="staff-row-body"><div class="staff-row-left">'
       +'<div class="staff-row-head"><div class="name">'+esc(s.name)+'</div><div class="pos">'+esc(s.position||'')+'</div><div class="store">'+esc(storeLabel(s.store))+'</div></div>'
-      +critLinesArr.join('')
-      +'</div>'
-      +'<div class="score-cell">'+total.toFixed(1)+'</div>'
-      +'</div>'
-      +'</div>';
+      +lines.join('')+'</div><div class="score-cell">'+total.toFixed(1)+'</div></div></div>';
   }));
   wrap.innerHTML=rowsHtml.join('');
-
-}
-
-function scoreForRate(rate,scaleJson){
-  const scale=(scaleJson||[]).slice().sort(function(a,b){return a[0]-b[0];});
-  let pts=0;
-  for(const pair of scale){if(rate>=pair[0])pts=pair[1];}
-  return pts;
 }
 
 function calcCriteria(c,months){
@@ -346,36 +283,25 @@ function calcCriteria(c,months){
     if(e&&e.target!=null){hasTarget=true;targetSum+=Number(e.target||0);}
     resultSum+=Number(e&&e.result||0);
   });
-  let rate=0;
-  if(c.calc_type==='inverse_count'){
-    rate=hasTarget?Math.max(0,1-(resultSum/(targetSum||1))):0;
-  } else {
-    rate=targetSum>0?(resultSum/targetSum):0;
-  }
+  const rate=rateFor(c,targetSum,resultSum,hasTarget);
   const score=scoreForRate(rate,c.scale_json);
-  const weighted=score*Number(c.weight||0);
-  return {targetSum,resultSum,rate,score,weighted};
-}  
+  return {targetSum,resultSum,rate,score,weighted:score*Number(c.weight||0)};
+}
 
-  async function openDetail(sid){
+async function openDetail(sid){
   currentSid=sid;
   const st=students.find(function(s){return s.id===sid;});
   if(!st)return;
   document.getElementById('detail-name').textContent=st.name;
   document.getElementById('detail-sub').textContent=(st.position||'')+'　'+storeLabel(st.store);
   currentDetailStore=st.store;
-
   const year=Number(document.getElementById('ev-year').value);
-  const quarter=Number(document.getElementById('ev-quarter').value);
-  const months=QUARTER_MONTHS[quarter];
+  const months=QUARTER_MONTHS[Number(document.getElementById('ev-quarter').value)];
   currentDetailYear=year;
-
   currentCriteria=allCriteria.filter(function(c){return c.position===st.position;});
-
-  const {data:entryData}=await sb.from('eval_entries').select('*').eq('student_id',sid).eq('year',year).in('month',months);
+  const {data}=await sb.from('eval_entries').select('*').eq('student_id',sid).eq('year',year).in('month',months);
   entries={};
-  (entryData||[]).forEach(function(r){entries[r.criteria_id+'_'+r.month]=r;});
-
+  (data||[]).forEach(function(r){entries[r.criteria_id+'_'+r.month]=r;});
   await renderCritList(months);
   document.getElementById('detail-modal').classList.add('show');
 }
@@ -389,62 +315,40 @@ async function renderCritList(months){
     return;
   }
   let total=0;
-  const cardsHtml=[];
+  const cards=[];
   for(const c of currentCriteria){
     if(c.data_source==='store_sales'){
-      let targetSum=0,resultSum=0;
-      const monthCols=[];
-      for(const m of months){
-        const monthData=await getStoreSalesMonth(currentDetailStore,currentDetailYear,m);
-        targetSum+=monthData.target;
-        resultSum+=monthData.result;
-        const hit=monthData.target>0&&monthData.result>=monthData.target;
-        monthCols.push('<div class="month-col'+(hit?' hit':'')+'">'
-          +'<div class="month-col-label">'+m+'月</div>'
-          +'<div class="month-col-target">目標 '+monthData.target.toLocaleString()+'</div>'
-          +'<div class="month-col-result">'+monthData.result.toLocaleString()+'</div>'
-          +'</div>');
-      }
-      const rate=targetSum>0?(resultSum/targetSum):0;
-      const score=scoreForRate(rate,c.scale_json);
+      const b=await storeSalesBlock(currentDetailStore,currentDetailYear,months);
+      const score=scoreForRate(b.rate,c.scale_json);
       const weighted=score*Number(c.weight||0);
       total+=weighted;
-      cardsHtml.push('<div class="crit-card">'
-        +'<div class="crit-head"><div class="crit-name">'+esc(c.name)+'（数値管理と連動・自動取得）</div><div class="crit-weight">重み '+c.weight+'</div></div>'
-        +'<div class="month-cols" style="margin-bottom:8px">'+monthCols.join('')
-        +'<div class="total-col"><div class="total-col-label">3か月合計</div><div class="total-col-nums">'+targetSum.toLocaleString()+'→'+resultSum.toLocaleString()+'</div><div class="total-col-rate">'+Math.round(rate*100)+'%</div></div>'
-        +'</div>'
-        +'<div class="crit-result-row"><span class="crit-score">'+score+'点 × '+c.weight+' = '+weighted.toFixed(1)+'</span></div>'
-        +'</div>');
+      cards.push('<div class="crit-card"><div class="crit-head"><div class="crit-name">'+esc(c.name)+'（数値管理と連動・自動取得）</div><div class="crit-weight">重み '+c.weight+'</div></div>'
+        +'<div style="margin-bottom:8px">'+b.html+'</div>'
+        +'<div class="crit-result-row"><span class="crit-score">'+score+'点 × '+c.weight+' = '+weighted.toFixed(1)+'</span></div></div>');
     } else {
       const calc=calcCriteria(c,months);
       total+=calc.weighted;
-      cardsHtml.push('<div class="crit-card">'
-        +'<div class="crit-head"><div class="crit-name">'+esc(c.name)+'</div><div class="crit-weight">重み '+c.weight+'</div></div>'
-        +'<div class="crit-grid">'+months.map(function(m,i){
+      function grid(f,label){
+        return '<div class="crit-grid">'+months.map(function(m,i){
           const e=entries[c.id+'_'+m]||{};
-          return '<div><label>'+MONTH_LABELS[i]+' 目標</label><input type="number" class="num-inp" data-cid="'+c.id+'" data-m="'+m+'" data-f="target" value="'+(e.target!=null?e.target:'')+'" onchange="onEntryChange(this)"></div>';
-        }).join('')+'</div>'
-        +'<div class="crit-grid">'+months.map(function(m,i){
-          const e=entries[c.id+'_'+m]||{};
-          return '<div><label>'+MONTH_LABELS[i]+' 結果</label><input type="number" class="num-inp" data-cid="'+c.id+'" data-m="'+m+'" data-f="result" value="'+(e.result!=null?e.result:'')+'" onchange="onEntryChange(this)"></div>';
-        }).join('')+'</div>'
-        +'<div class="crit-result-row"><span>達成率 '+Math.round(calc.rate*100)+'%</span><span class="crit-score">'+calc.score+'点 × '+c.weight+' = '+calc.weighted.toFixed(1)+'</span></div>'
-        +'</div>');
+          return '<div><label>'+MONTH_LABELS[i]+' '+label+'</label><input type="number" class="num-inp" data-cid="'+c.id+'" data-m="'+m+'" data-f="'+f+'" value="'+(e[f]!=null?e[f]:'')+'" onchange="onEntryChange(this)"></div>';
+        }).join('')+'</div>';
+      }
+      cards.push('<div class="crit-card"><div class="crit-head"><div class="crit-name">'+esc(c.name)+'</div><div class="crit-weight">重み '+c.weight+'</div></div>'
+        +grid('target','目標')+grid('result','結果')
+        +'<div class="crit-result-row"><span>達成率 '+Math.round(calc.rate*100)+'%</span><span class="crit-score">'+calc.score+'点 × '+c.weight+' = '+calc.weighted.toFixed(1)+'</span></div></div>');
     }
   }
-  wrap.innerHTML=cardsHtml.join('');
+  wrap.innerHTML=cards.join('');
   document.getElementById('hero-score').textContent=total.toFixed(1)+'点';
 }
-  
 
 function onEntryChange(el){
   const cid=Number(el.dataset.cid),m=Number(el.dataset.m),f=el.dataset.f,v=el.value===''?null:Number(el.value);
   const key=cid+'_'+m;
   if(!entries[key])entries[key]={criteria_id:cid,month:m};
   entries[key][f]=v;
-  const quarter=Number(document.getElementById('ev-quarter').value);
-  renderCritList(QUARTER_MONTHS[quarter]);
+  renderCritList(QUARTER_MONTHS[Number(document.getElementById('ev-quarter').value)]);
 }
 
 async function saveAllEntries(){
@@ -456,8 +360,9 @@ async function saveAllEntries(){
     const e=entries[k];
     return {student_id:sid,year,month:e.month,criteria_id:e.criteria_id,target:e.target!=null?e.target:null,result:e.result!=null?e.result:null,updated_at:new Date().toISOString()};
   });
-  for(const row of rows){
-    await sb.from('eval_entries').upsert(row,{onConflict:'student_id,year,month,criteria_id'});
+  if(rows.length){
+    const {error}=await sb.from('eval_entries').upsert(rows,{onConflict:'student_id,year,month,criteria_id'});
+    if(error){alert('保存に失敗しました: '+error.message);return;}
   }
   let total=0;
   const details=currentCriteria.map(function(c){
@@ -465,22 +370,17 @@ async function saveAllEntries(){
     total+=calc.weighted;
     return {criteria_id:c.id,name:c.name,rate:calc.rate,score:calc.score,weighted:calc.weighted};
   });
-  await sb.from('eval_quarter_scores').upsert({
-    student_id:sid,year,quarter,total_score:total,details_json:details,confirmed_at:new Date().toISOString()
-  },{onConflict:'student_id,year,quarter'});
+  await sb.from('eval_quarter_scores').upsert({student_id:sid,year,quarter,total_score:total,details_json:details,confirmed_at:new Date().toISOString()},{onConflict:'student_id,year,quarter'});
   alert('保存しました');
   loadListView();
 }
 
-/* ===== 管理者：評価項目編集 ===== */
+/* ===== 評価項目の編集 ===== */
 let adminItems=[];
-function canEditAdmin(){return ME&&ADMIN_ROLES.includes(ME.position);}
-
-function positionList(){return POS_ORDER.slice();}
+function canEditAdmin(){return !!ME&&APP_CONFIG.roles.evalEditor.includes(ME.position);}
 
 function openAdminModal(){
-  const sel=document.getElementById('admin-position');
-  sel.innerHTML=positionList().map(function(p){return '<option value="'+esc(p)+'">'+esc(p)+'</option>';}).join('');
+  document.getElementById('admin-position').innerHTML=EVAL_TARGET_ROLES.map(function(p){return '<option value="'+esc(p)+'">'+esc(p)+'</option>';}).join('');
   renderAdminList();
   document.getElementById('admin-modal').classList.add('show');
 }
@@ -503,31 +403,26 @@ function scaleToPctMap(scaleJson){
 function renderAdminItemsHtml(){
   const wrap=document.getElementById('admin-list');
   wrap.innerHTML=adminItems.map(function(it,i){
-    const checked=it.is_active!==false?'checked':'';
     const pctMap=scaleToPctMap(it.scale_json);
-    const scaleRowsHtml=SCORE_STEPS.map(function(score){
+    const scaleRows=SCORE_STEPS.map(function(score){
       const pct=pctMap[score]!=null?pctMap[score]:'';
       const isBase=score===60;
       return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;'+(isBase?'background:#fdf3df;border-radius:6px;padding:3px 4px':'')+'">'
         +'<div style="width:82px;font-size:12px;color:'+(isBase?'var(--accent)':'var(--mid)')+';text-align:right;font-weight:'+(isBase?'700':'400')+';white-space:nowrap">'+score+'点'+(isBase?'（基準）':'')+'</div>'
-        +'<input class="inp" type="number" step="0.1" style="width:90px" data-i="'+i+'" data-score="'+score+'" data-f="scale_pct" value="'+pct+'" placeholder="%" onchange="updScalePct(this)">'
-        +'<span style="font-size:12px;color:var(--soft)">％達成で</span>'
-        +'</div>';
+        +'<input class="inp" type="number" step="0.1" style="width:90px" data-i="'+i+'" data-score="'+score+'" value="'+pct+'" placeholder="%" onchange="updScalePct(this)">'
+        +'<span style="font-size:12px;color:var(--soft)">％達成で</span></div>';
     }).join('');
-    const weightOptsHtml=WEIGHT_OPTIONS.map(function(w){
-      return '<option value="'+w+'"'+(Number(it.weight)===w?' selected':'')+'>'+Math.round(w*100)+'%</option>';
-    }).join('');
+    const weightOpts=WEIGHT_OPTIONS.map(function(w){return '<option value="'+w+'"'+(Number(it.weight)===w?' selected':'')+'>'+Math.round(w*100)+'%</option>';}).join('');
     return '<div class="admin-item">'
-      +'<label style="position:absolute;top:8px;right:36px;font-size:11px;color:var(--mid);display:flex;align-items:center;gap:4px"><input type="checkbox" data-i="'+i+'" data-f="is_active" '+checked+' onchange="updAdminItem(this)">今期使う</label>'
+      +'<label style="position:absolute;top:8px;right:36px;font-size:11px;color:var(--mid);display:flex;align-items:center;gap:4px"><input type="checkbox" data-i="'+i+'" data-f="is_active" '+(it.is_active!==false?'checked':'')+' onchange="updAdminItem(this)">今期使う</label>'
       +'<button class="del" onclick="removeAdminItem('+i+')">×</button>'
       +'<div class="field"><label>項目名</label><input class="inp" data-i="'+i+'" data-f="name" value="'+esc(it.name)+'" onchange="updAdminItem(this)"></div>'
-      +'<div class="field"><label>重み（この項目が合計点に占める割合）</label><select class="inp" data-i="'+i+'" data-f="weight" onchange="updAdminItem(this)">'+weightOptsHtml+'</select></div>'
-      +'<div class="field"><label>評価の向き</label>'
-      +'<select class="inp" data-i="'+i+'" data-f="calc_type" onchange="updAdminItem(this)">'
+      +'<div class="field"><label>重み（この項目が合計点に占める割合）</label><select class="inp" data-i="'+i+'" data-f="weight" onchange="updAdminItem(this)">'+weightOpts+'</select></div>'
+      +'<div class="field"><label>評価の向き</label><select class="inp" data-i="'+i+'" data-f="calc_type" onchange="updAdminItem(this)">'
       +'<option value="ratio"'+(it.calc_type==='ratio'?' selected':'')+'>数値が多いほど高評価（売上・件数など）</option>'
       +'<option value="inverse_count"'+(it.calc_type==='inverse_count'?' selected':'')+'>数値が少ないほど高評価（遅刻・欠勤など）</option>'
       +'</select></div>'
-      +'<div class="field"><label>尺度（各点数に対応する達成率％。60点＝100％がベースの目安ですが自由に変更できます）</label>'+scaleRowsHtml+'</div>'
+      +'<div class="field"><label>尺度（各点数に対応する達成率％。60点＝100％が基準の目安）</label>'+scaleRows+'</div>'
       +'</div>';
   }).join('')||'<div class="empty-msg">項目がありません。「＋項目を追加」から作成してください</div>';
 }
@@ -538,18 +433,11 @@ function updScalePct(el){
   scale.sort(function(a,b){return a[1]-b[1];});
   adminItems[i].scale_json=scale;
 }
-
 function updAdminItem(el){
   const i=Number(el.dataset.i),f=el.dataset.f;
-  if(f==='scale_json'){
-    try{adminItems[i][f]=JSON.parse(el.value);}catch(e){alert('尺度のJSON形式が正しくありません');}
-  } else if(f==='weight'){
-    adminItems[i][f]=Number(el.value);
-  } else if(f==='is_active'){
-    adminItems[i][f]=el.checked;
-  } else {
-    adminItems[i][f]=el.value;
-  }
+  if(f==='weight')adminItems[i][f]=Number(el.value);
+  else if(f==='is_active')adminItems[i][f]=el.checked;
+  else adminItems[i][f]=el.value;
 }
 function addAdminItem(){
   const pos=document.getElementById('admin-position').value;
@@ -562,34 +450,32 @@ async function saveAdminItems(){
   const pos=document.getElementById('admin-position').value;
   for(let i=0;i<adminItems.length;i++){
     const it=adminItems[i];
-    it.sort_order=i+1;
-    const payload={position:pos,name:it.name,weight:it.weight,calc_type:it.calc_type,scale_json:it.scale_json,sort_order:it.sort_order,is_active:it.is_active!==false};
-    if(it.id){
-      await sb.from('eval_criteria').update(payload).eq('id',it.id);
-    } else {
-      await sb.from('eval_criteria').insert(payload);
-    }
+    const payload={position:pos,name:it.name,weight:it.weight,calc_type:it.calc_type,scale_json:it.scale_json,sort_order:i+1,is_active:it.is_active!==false};
+    const res=it.id?await sb.from('eval_criteria').update(payload).eq('id',it.id):await sb.from('eval_criteria').insert(payload);
+    if(res.error){alert('保存に失敗しました: '+res.error.message);return;}
   }
   closeAdminModal();
   loadListView();
 }
 
+document.querySelectorAll('.modal-overlay').forEach(function(el){
+  el.addEventListener('click',function(e){if(e.target===el)el.classList.remove('show');});
+});
+
 /* ===== 起動 ===== */
 (async function(){
-  const loginId=localStorage.getItem('logged_in_id');
-  if(!loginId){document.getElementById('locked-view').style.display='block';document.getElementById('locked-view').textContent='ログインが必要です';return;}
-  const {data:sData}=await sb.from('students').select('*').order('created_at');
-  students=(sData||[]).filter(function(s){return s.is_active!==false;});
-  ME=(sData||[]).find(function(s){return s.id===loginId;})||null;
-  if(!ME){document.getElementById('locked-view').style.display='block';document.getElementById('locked-view').textContent='ログインが必要です';return;}
+  ME=await initAppHeader(sb,'evaluation');
+  if(!ME)return;
+  const {data}=await sb.from('students').select('*').order('created_at');
+  students=(data||[]).filter(function(s){return s.is_active!==false;});
   document.getElementById('app-wrap').style.display='block';
   yearOptions();
-  document.getElementById('ev-quarter').value=String(currentQuarterGuess());
-  document.getElementById('ev-pos-filter').innerHTML='<option value="">すべての役職</option>'+POS_ORDER.map(function(p){return '<option value="'+esc(p)+'">'+esc(p)+'</option>';}).join('');
-  if(canEditAdmin())document.getElementById('admin-row').style.display='';
+  document.getElementById('ev-quarter').value=String(Math.ceil((new Date().getMonth()+1)/3));
+  document.getElementById('ev-pos-filter').innerHTML='<option value="">すべての役職</option>'+EVAL_TARGET_ROLES.map(function(p){return '<option value="'+esc(p)+'">'+esc(p)+'</option>';}).join('');
+  if(canEditAdmin())document.getElementById('admin-btn').style.display='';
+  renderStoreTabs();
   loadListView();
 })();
-
 </script>
 </body>
 </html>
