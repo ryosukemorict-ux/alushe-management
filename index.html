@@ -497,9 +497,15 @@ function renderDashboard(){
   document.getElementById('dash-name').textContent=ME?ME.name:'';
   document.getElementById('dash-sub').textContent=ME?(ME.position||storeLabel(ME.store))+' ・ ログイン中':'';
   document.getElementById('pw-btn-wrap').style.display=ME?'':'none';
-  const philosophyQuotes=['常に笑顔を忘れない','小さな変化に気づく','感謝を言葉にする','仲間を大切にする','挑戦を止めない','現状維持をしない','学び続ける','人として成長する','お客様目線を忘れない','"また来たい"を本気で作る','必ずありがとうを伝える'];
-  const todayQuote=philosophyQuotes[new Date().getDate()%philosophyQuotes.length];
-  const philosophyCard='<div style="background:linear-gradient(135deg,#1a1410 0%,#2e241e 100%);border-radius:16px;padding:20px 18px;margin-bottom:16px;text-align:center;cursor:pointer;" onclick="window.location.href=\'philosophy.html\'">'+'<div style="font-size:10px;letter-spacing:3px;color:#c9a96e;margin-bottom:10px">✦ TODAY\'S PHILOSOPHY ✦</div>'+'<div style="font-size:16px;font-weight:700;color:white;line-height:1.6;margin-bottom:12px">「'+esc(todayQuote)+'」</div>'+'<div style="font-size:11px;color:#c4b49e;">企業理念を読む →</div>'+'</div>';
+  // 今日の理念：ミッション・ビジョン・バリューを日替わりで順番に表示
+  const pItems=APP_CONFIG.philosophy.items;
+  const dayOfYear=Math.floor((new Date()-new Date(new Date().getFullYear(),0,0))/86400000);
+  const todayItem=pItems[dayOfYear%pItems.length];
+  const philosophyCard='<div style="background:linear-gradient(135deg,#1a1410 0%,#2e241e 100%);border-radius:16px;padding:20px 18px;margin-bottom:16px;text-align:center;cursor:pointer;" onclick="window.location.href=\'philosophy.html\'">'
+    +'<div style="font-size:10px;letter-spacing:3px;color:#c9a96e;margin-bottom:6px">✦ TODAY\'S PHILOSOPHY ✦</div>'
+    +'<div style="font-size:11px;letter-spacing:2px;color:#c4b49e;margin-bottom:10px">'+esc(todayItem.en)+'　'+esc(todayItem.label)+'</div>'
+    +'<div style="font-size:16px;font-weight:700;color:white;line-height:1.6;margin-bottom:12px">「'+esc(todayItem.text)+'」</div>'
+    +'<div style="font-size:11px;color:#c4b49e;">企業理念を読む →</div></div>';
   const existing=document.querySelector('.philosophy-card');if(existing)existing.remove();
   const cardEl=document.createElement('div');cardEl.className='philosophy-card';cardEl.innerHTML=philosophyCard;
   document.getElementById('func-grid').insertAdjacentElement('beforebegin',cardEl);
