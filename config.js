@@ -169,7 +169,12 @@ function injectHeaderStyle() {
     '.app-logout{font-family:"Noto Sans JP",sans-serif;font-size:12px;padding:6px 12px;border-radius:7px;border:1.5px solid #c9a96e;background:transparent;color:#e8d5b0;cursor:pointer;}' +
     '.nav-tabs{background:white;border-bottom:2px solid #e8d5b0;padding:0 16px;display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch;}' +
     '.nav-tab{font-family:"Noto Sans JP",sans-serif;font-size:13px;font-weight:500;padding:12px 18px;border:none;background:none;color:#7a6a58;cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent;margin-bottom:-2px;}' +
-    '.nav-tab.active{color:#c9a96e;border-bottom-color:#c9a96e;font-weight:700;}';
+    '.nav-tab.active{color:#c9a96e;border-bottom-color:#c9a96e;font-weight:700;}' +
+    // 店舗タブ：折り返さず1行で横スクロール（店舗が増えても高さが変わらない）
+    '.store-tabs{flex-wrap:nowrap !important;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:4px;}' +
+    '.store-tabs::-webkit-scrollbar{display:none;}' +
+    '.store-tab{flex-shrink:0;white-space:nowrap;}' +
+    '@media(max-width:600px){.store-tab{font-size:12px !important;padding:6px 14px !important;}}';
   document.head.appendChild(st);
 }
 
@@ -246,4 +251,13 @@ document.addEventListener('click', function (e) {
   if (!a) return;
   e.preventDefault();
   openAttachment(a.getAttribute('href'), a.getAttribute('data-name'));
+});
+
+// 店舗タブを押したら、選んだタブを横スクロールの中央に寄せる（全ページ共通）
+document.addEventListener('click', function (e) {
+  if (!(e.target.closest && e.target.closest('.store-tab'))) return;
+  setTimeout(function () {
+    const a = document.querySelector('.store-tab.active');
+    if (a) a.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+  }, 0);
 });
