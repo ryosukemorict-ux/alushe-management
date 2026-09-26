@@ -32,7 +32,13 @@ const APP_CONFIG = {
     { id: 'アルーシェ船堀', label: 'アルーシェ船堀', group: 'hair' },
     { id: '船堀スカイ',     label: '船堀スカイ',     group: 'hair' },
     { id: '心斎橋',         label: '心斎橋',         group: 'hair' },
-    // まつげ・ネイル系は店舗名が確定したらここに追加（group: 'eye'）
+    // まつげ・ネイル系
+    { id: '錦糸町アイ',       label: '錦糸町アイ',       group: 'eye' },
+    { id: '平井アイ・ネイル', label: '平井アイ・ネイル', group: 'eye' },
+    { id: 'Amour菊川',        label: 'Amour菊川',        group: 'eye' },
+    { id: '菊川アイ',         label: '菊川アイ',         group: 'eye' },
+    { id: '西大島アイ',       label: '西大島アイ',       group: 'eye' },
+    { id: '船堀アイ',         label: '船堀アイ',         group: 'eye' },
   ],
 
   // 役職（上位から順に。スタッフ一覧・数値管理の役職順に使う）
