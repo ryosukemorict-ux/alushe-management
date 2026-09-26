@@ -49,7 +49,7 @@ body{background:var(--cream);font-family:'Noto Sans JP',sans-serif;color:var(--d
     <button class="sub-btn" onclick="location.href='sales.html'">📊 数値管理に戻る</button>
   </div>
 
-  <div class="store-tabs" id="store-tabs"></div>
+  <div id="store-filter"></div>
 
   <div class="chart-card"><div class="chart-title">総売結果（税込・円）</div><div class="chart-wrap"><canvas id="chart-result"></canvas></div></div>
   <div class="chart-card"><div class="chart-title">材料比率（%）</div><div class="chart-wrap"><canvas id="chart-material"></canvas></div></div>
@@ -77,13 +77,7 @@ function renderYearSel(){
   if(currentYear<2026)currentYear=2026;
   sel.value=currentYear;
 }
-function renderStoreTabs(){
-  let h='<button class="store-tab'+(currentStore==='all'?' active':'')+'" onclick="switchStore(\'all\')">全店舗</button>';
-  APP_CONFIG.stores.forEach(function(s){
-    h+='<button class="store-tab'+(currentStore===s.id?' active':'')+'" onclick="switchStore(\''+esc(s.id)+'\')">'+esc(s.label)+'</button>';
-  });
-  document.getElementById('store-tabs').innerHTML=h;
-}
+function renderStoreTabs(){renderStoreFilter('store-filter',currentStore,switchStore);}
 function switchStore(store){currentStore=store;renderStoreTabs();renderCharts();}
 async function onYearChange(){
   currentYear=Number(document.getElementById('year-sel').value);
@@ -112,7 +106,7 @@ async function loadYearData(){
 
 function getMonthTotals(month){
   let list=students.slice();
-  if(currentStore!=='all')list=list.filter(function(s){return getStoreForMonth(s,month)===currentStore;});
+  if(currentStore!=='all')list=list.filter(function(s){return storeFilterMatches(currentStore,getStoreForMonth(s,month));});
   const rows=salesDataAll[month]||{};
   let result=0,clients=0,tanden=0,techFree=0;
   list.forEach(function(s){
@@ -125,9 +119,9 @@ function getMonthTotals(month){
   // 材料比率：店舗選択時はその店舗、全店舗は入力済み店舗の平均
   const mr=materialByMonth[month]||{};
   let material=null;
-  if(currentStore!=='all'){material=mr[currentStore]!=null?mr[currentStore]:null;}
+  if(isSingleStore(currentStore)){material=mr[currentStore]!=null?mr[currentStore]:null;}
   else{
-    const vals=APP_CONFIG.stores.map(function(s){return mr[s.id];}).filter(function(v){return v!=null;});
+    const vals=storesInFilter(currentStore).map(function(id){return mr[id];}).filter(function(v){return v!=null;});
     material=vals.length?vals.reduce(function(a,b){return a+b;},0)/vals.length:null;
   }
   return {
@@ -169,6 +163,7 @@ function renderCharts(){
   students=(data||[]).filter(function(s){return s.is_active!==false&&!EXCLUDE_ROLES.includes(s.position);});
   assignHistory=await loadAssignmentHistory(sb);
   renderYearSel();
+  currentStore=defaultStoreFilter(ME);
   renderStoreTabs();
   await loadYearData();
   renderCharts();
