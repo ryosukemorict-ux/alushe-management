@@ -57,6 +57,7 @@ tbody tr:hover td:first-child{background:#fffbf7;}
 .num-inp{font-family:'Noto Sans JP',sans-serif;padding:3px 4px;border-radius:4px;border:1px solid var(--soft);background:white;text-align:right;font-size:11px;width:68px;}
 .num-inp:focus{outline:none;border-color:var(--gold);}
 .num-inp.pct{width:48px;}
+.num-inp:disabled,.tbl-sel:disabled{background-color:#f5f0eb;color:#7a6a58;border-color:#e8d5b0;opacity:1;-webkit-text-fill-color:#7a6a58;}
 .tbl-sel{font-family:'Noto Sans JP',sans-serif;font-size:11px;padding:3px 16px 3px 4px;border-radius:4px;border:1px solid var(--soft);background:white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%237a6a58'/%3E%3C/svg%3E") no-repeat right 3px center;appearance:none;-webkit-appearance:none;cursor:pointer;color:#3a3028;width:58px;}
 .auto-val{font-size:12px;font-weight:700;color:var(--dark);}
 .auto-val-sub{font-size:9px;color:var(--mid);font-weight:400;display:block;}
@@ -137,11 +138,12 @@ tbody tr:hover td:first-child{background:#fffbf7;}
     <button class="sub-btn" onclick="location.href='trends.html'">📈 年間推移</button>
   </div>
 
-  <!-- 店舗タブ：config.js の店舗一覧から生成 -->
-  <div class="store-tabs" id="store-tabs"></div>
+  <!-- 店舗の切り替え（グループボタン＋店舗プルダウン）：config.js の共通部品 -->
+  <div id="store-filter"></div>
+  <div id="readonly-note" style="display:none;font-size:12px;color:var(--mid);background:#f5f0eb;border-radius:8px;padding:8px 12px;margin-bottom:12px">集計表示中のため、入力はできません。入力するときは店舗を1つ選んでください。</div>
 
   <div class="total-panel">
-    <div class="total-panel-label">✦ 店舗合計</div>
+    <div class="total-panel-label" id="total-label">✦ 店舗合計</div>
     <div class="total-grid">
       <div class="total-item"><div class="total-item-label">総売目標</div><div class="total-item-val" id="tot-target">—</div><div class="total-item-sub" id="tot-target-sub"></div></div>
       <div class="total-item"><div class="total-item-label">総売結果</div><div class="total-item-val" id="tot-result">—</div><div class="total-item-sub" id="tot-result-sub"></div></div>
@@ -193,13 +195,15 @@ function exTax(n){return '(税抜 '+yen(n/(1+TAX_RATE))+')';}
 
 // ===== 店舗タブ =====
 function renderStoreTabs(){
-  let h='<button class="store-tab'+(currentStore==='all'?' active':'')+'" onclick="switchStore(\'all\')">全店舗</button>';
-  APP_CONFIG.stores.forEach(function(s){
-    h+='<button class="store-tab'+(currentStore===s.id?' active':'')+'" onclick="switchStore(\''+esc(s.id)+'\')">'+esc(s.label)+'</button>';
-  });
-  document.getElementById('store-tabs').innerHTML=h;
+  renderStoreFilter('store-filter',currentStore,switchStore);
+  document.getElementById('total-label').textContent='✦ '+storeFilterLabel(currentStore)+' 合計';
+  document.getElementById('readonly-note').style.display=isSingleStore(currentStore)?'none':'';
 }
 function switchStore(store){currentStore=store;renderStoreTabs();renderTable();}
+// 入力できるか：店舗を1つ選んでいるとき。ただし全店共通の人（どの店舗にも属さない）は全店舗表示で入力できる
+function canInputRow(s){
+  return isSingleStore(currentStore)||!isSingleStore(getStoreForMonth(s,currentMonth));
+}
 
 // ===== 表のヘッダー =====
 function renderHead(){
@@ -253,7 +257,7 @@ function getStoreForMonth(s,month){
 }
 function getStaffList(){
   let list=students.slice();
-  if(currentStore!=='all')list=list.filter(function(s){return getStoreForMonth(s,currentMonth)===currentStore;});
+  if(currentStore!=='all')list=list.filter(function(s){return storeFilterMatches(currentStore,getStoreForMonth(s,currentMonth));});
   return list.sort(function(a,b){
     const po=positionOrder(a.position)-positionOrder(b.position);if(po!==0)return po;
     return storeOrder(getStoreForMonth(a,currentMonth))-storeOrder(getStoreForMonth(b,currentMonth));
@@ -295,14 +299,15 @@ function renderTable(){
     const d=salesData[s.id]||{};
     const rt=targetOf(s);
     const result=calcResult(d);
+    const dis=canInputRow(s)?'':' disabled';
     let row='<tr><td>'+esc(s.name)+'<span class="pos-badge">'+esc(s.position||'')+'</span></td>';
     row+='<td><span class="auto-val">'+(rt?rt.toLocaleString():'—')+'</span><span class="auto-val-sub">'+(rt?exTax(rt):'')+'</span></td>';
     row+='<td><span class="auto-val" id="result-'+s.id+'">'+(result?Math.round(result*(1+TAX_RATE)).toLocaleString():'—')+'</span><span class="auto-val-sub" id="result-sub-'+s.id+'">'+(result?'(税抜 '+result.toLocaleString()+')':'')+'</span></td>';
     COLUMNS.forEach(function(c){
       if(c.auto)return;
-      if(c.select){row+='<td><select class="tbl-sel" data-sid="'+s.id+'" data-f="'+c.f+'">'+numOpts(20,d[c.f])+'</select></td>';return;}
+      if(c.select){row+='<td><select class="tbl-sel" data-sid="'+s.id+'" data-f="'+c.f+'"'+dis+'>'+numOpts(20,d[c.f])+'</select></td>';return;}
       const val=d[c.f]==null?'':d[c.f];
-      row+='<td><input type="number" class="num-inp'+(c.pct?' pct':'')+'" data-sid="'+s.id+'" data-f="'+c.f+'" placeholder="'+(c.pct?'0.0':'0')+'"'+(c.pct?' step="0.1"':'')+' value="'+esc(val)+'"></td>';
+      row+='<td><input type="number" class="num-inp'+(c.pct?' pct':'')+'" data-sid="'+s.id+'" data-f="'+c.f+'" placeholder="'+(c.pct?'0.0':'0')+'"'+(c.pct?' step="0.1"':'')+' value="'+esc(val)+'"'+dis+'></td>';
     });
     return row+'</tr>';
   }).join('');
@@ -345,12 +350,12 @@ function updateTotals(){
   document.getElementById('tot-clients').textContent=clients?clients+'名':'—';
   set('tot-tanden',tanden?yen(tanden*(1+TAX_RATE)):'—',tanden?'(税抜 '+yen(tanden)+')':'');
 
-  // 材料比率：店舗選択時はその店舗、全店舗は入力済み店舗の平均
-  if(currentStore!=='all'){
+  // 材料比率：店舗選択時はその店舗、全店舗・グループ全体は入力済み店舗の平均
+  if(isSingleStore(currentStore)){
     const v=materialRatio[currentStore];
     set('tot-material',v!=null?v+'%':'—','');
   } else {
-    const vals=APP_CONFIG.stores.map(function(s){return materialRatio[s.id];}).filter(function(v){return v!=null;});
+    const vals=storesInFilter(currentStore).map(function(id){return materialRatio[id];}).filter(function(v){return v!=null;});
     if(!vals.length)set('tot-material','—','');
     else{
       const avg=vals.reduce(function(a,b){return a+Number(b);},0)/vals.length;
@@ -460,6 +465,7 @@ document.querySelectorAll('.modal-overlay').forEach(function(el){
   const thisMonth=t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0');
   currentMonth=months.includes(thisMonth)?thisMonth:months[0];
   document.getElementById('month-sel').value=currentMonth;
+  currentStore=defaultStoreFilter(ME);
   renderStoreTabs();
   renderHead();
   await onMonthChange();
