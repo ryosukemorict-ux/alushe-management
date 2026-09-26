@@ -14,9 +14,10 @@ const APP_CONFIG = {
   allStoresValue: '全店共通',
 
   // 店舗グループ（表示順）
+  // label = プルダウンの見出し / short = 店舗切り替えボタンの表示名
   storeGroups: [
-    { id: 'hair', label: 'ヘアサロン' },
-    { id: 'eye',  label: 'まつげ・ネイル' },
+    { id: 'hair', label: 'ヘアサロン',     short: 'ヘア' },
+    { id: 'eye',  label: 'まつげ・ネイル', short: 'アイ・ネイル' },
   ],
 
   // 店舗一覧（この順番で左から表示）
@@ -180,7 +181,13 @@ function injectHeaderStyle() {
     '.store-tabs{flex-wrap:nowrap !important;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:4px;}' +
     '.store-tabs::-webkit-scrollbar{display:none;}' +
     '.store-tab{flex-shrink:0;white-space:nowrap;}' +
-    '@media(max-width:600px){.store-tab{font-size:12px !important;padding:6px 14px !important;}}';
+    '@media(max-width:600px){.store-tab{font-size:12px !important;padding:6px 14px !important;}}' +
+    // 店舗の切り替え（グループボタン＋店舗プルダウン）
+    '.sf-wrap{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px;}' +
+    '.sf-btn{font-family:"Noto Sans JP",sans-serif;font-size:13px;font-weight:700;padding:8px 18px;border-radius:20px;border:2px solid #e8d5b0;background:white;color:#7a6a58;cursor:pointer;white-space:nowrap;}' +
+    '.sf-btn.active{background:#c9a96e;color:white;border-color:#c9a96e;}' +
+    '.sf-sel{font-family:"Noto Sans JP",sans-serif;font-size:14px;font-weight:700;padding:8px 32px 8px 14px;border-radius:20px;border:2px solid #c9a96e;outline:none;cursor:pointer;color:#1a1410;appearance:none;-webkit-appearance:none;background:white url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2710%27 height=%276%27%3E%3Cpath d=%27M0 0l5 6 5-6z%27 fill=%27%23c9a96e%27/%3E%3C/svg%3E") no-repeat right 12px center;}' +
+    '@media(max-width:600px){.sf-btn{font-size:12px;padding:6px 14px;}.sf-sel{font-size:13px;}}';
   document.head.appendChild(st);
 }
 
@@ -267,3 +274,60 @@ document.addEventListener('click', function (e) {
     if (a) a.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
   }, 0);
 });
+
+// ===== 店舗の切り替え（全ページ共通） =====
+// 値の形：'all'（全店舗）/ 'group:hair' などのグループ全体 / 店舗id（単独店舗）
+function storeGroupOf(storeId) {
+  const st = APP_CONFIG.stores.find(function (x) { return x.id === storeId; });
+  return st ? st.group : null;
+}
+function isSingleStore(filter) {
+  return APP_CONFIG.stores.some(function (x) { return x.id === filter; });
+}
+// 店舗idが、選択中の切り替え（全店舗・グループ・単独店舗）に含まれるか
+function storeFilterMatches(filter, storeId) {
+  if (filter === 'all') return true;
+  if (String(filter).indexOf('group:') === 0) return storeGroupOf(storeId) === filter.slice(6);
+  return storeId === filter;
+}
+// 選択中の切り替えに含まれる店舗idの一覧
+function storesInFilter(filter) {
+  return APP_CONFIG.stores.filter(function (x) { return storeFilterMatches(filter, x.id); }).map(function (x) { return x.id; });
+}
+// 表示名（例：全店舗／ヘア全体／新宿）
+function storeFilterLabel(filter) {
+  if (filter === 'all') return '全店舗';
+  if (String(filter).indexOf('group:') === 0) {
+    const g = APP_CONFIG.storeGroups.find(function (x) { return x.id === filter.slice(6); });
+    return g ? (g.short || g.label) + '全体' : '';
+  }
+  return storeLabel(filter);
+}
+// 初期表示：ログインした人の所属店舗（全店共通などは全店舗）
+function defaultStoreFilter(me) {
+  return me && isSingleStore(me.store) ? me.store : 'all';
+}
+// 切り替え部品を描画する。onChange(新しい値) が呼ばれる
+function renderStoreFilter(containerId, current, onChange) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  window.__storeFilterCb = onChange;
+  el.className = 'sf-wrap';
+  const curGroup = current === 'all' ? 'all'
+    : (String(current).indexOf('group:') === 0 ? current.slice(6) : storeGroupOf(current));
+  let h = '<button type="button" class="sf-btn' + (curGroup === 'all' ? ' active' : '') + '" onclick="__storeFilterCb(\'all\')">全店舗</button>';
+  APP_CONFIG.storeGroups.forEach(function (g) {
+    if (!APP_CONFIG.stores.some(function (x) { return x.group === g.id; })) return;
+    h += '<button type="button" class="sf-btn' + (curGroup === g.id ? ' active' : '') + '" onclick="__storeFilterCb(\'group:' + g.id + '\')">' + (g.short || g.label) + '</button>';
+  });
+  if (curGroup !== 'all') {
+    const g = APP_CONFIG.storeGroups.find(function (x) { return x.id === curGroup; }) || {};
+    h += '<select class="sf-sel" onchange="__storeFilterCb(this.value)">';
+    h += '<option value="group:' + curGroup + '"' + (current === 'group:' + curGroup ? ' selected' : '') + '>' + (g.short || g.label || '') + '全体</option>';
+    APP_CONFIG.stores.filter(function (x) { return x.group === curGroup; }).forEach(function (x) {
+      h += '<option value="' + x.id + '"' + (current === x.id ? ' selected' : '') + '>' + x.label + '</option>';
+    });
+    h += '</select>';
+  }
+  el.innerHTML = h;
+}
