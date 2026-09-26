@@ -183,11 +183,9 @@ function injectHeaderStyle() {
     '.store-tab{flex-shrink:0;white-space:nowrap;}' +
     '@media(max-width:600px){.store-tab{font-size:12px !important;padding:6px 14px !important;}}' +
     // 店舗の切り替え（グループボタン＋店舗プルダウン）
-    '.sf-wrap{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px;}' +
-    '.sf-btn{font-family:"Noto Sans JP",sans-serif;font-size:13px;font-weight:700;padding:8px 18px;border-radius:20px;border:2px solid #e8d5b0;background:white;color:#7a6a58;cursor:pointer;white-space:nowrap;}' +
-    '.sf-btn.active{background:#c9a96e;color:white;border-color:#c9a96e;}' +
-    '.sf-sel{font-family:"Noto Sans JP",sans-serif;font-size:14px;font-weight:700;padding:8px 32px 8px 14px;border-radius:20px;border:2px solid #c9a96e;outline:none;cursor:pointer;color:#1a1410;appearance:none;-webkit-appearance:none;background:white url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2710%27 height=%276%27%3E%3Cpath d=%27M0 0l5 6 5-6z%27 fill=%27%23c9a96e%27/%3E%3C/svg%3E") no-repeat right 12px center;}' +
-    '@media(max-width:600px){.sf-btn{font-size:12px;padding:6px 14px;}.sf-sel{font-size:13px;}}';
+    '.sf-wrap{margin-bottom:14px;}' +
+    '.sf-sel{font-family:"Noto Sans JP",sans-serif;font-size:14px;font-weight:700;padding:9px 34px 9px 16px;border-radius:20px;border:2px solid #c9a96e;outline:none;cursor:pointer;color:#1a1410;background:white url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2710%27 height=%276%27%3E%3Cpath d=%27M0 0l5 6 5-6z%27 fill=%27%23c9a96e%27/%3E%3C/svg%3E") no-repeat right 14px center;appearance:none;-webkit-appearance:none;}' +
+    '@media(max-width:600px){.sf-sel{font-size:13px;padding:7px 30px 7px 14px;}}';
   document.head.appendChild(st);
 }
 
@@ -308,26 +306,25 @@ function defaultStoreFilter(me) {
   return me && isSingleStore(me.store) ? me.store : 'all';
 }
 // 切り替え部品を描画する。onChange(新しい値) が呼ばれる
+// 1つのプルダウンにまとめる：全店舗 → ヘア（全体＋各店舗） → アイ・ネイル（全体＋各店舗）
 function renderStoreFilter(containerId, current, onChange) {
   const el = document.getElementById(containerId);
   if (!el) return;
   window.__storeFilterCb = onChange;
   el.className = 'sf-wrap';
-  const curGroup = current === 'all' ? 'all'
-    : (String(current).indexOf('group:') === 0 ? current.slice(6) : storeGroupOf(current));
-  let h = '<button type="button" class="sf-btn' + (curGroup === 'all' ? ' active' : '') + '" onclick="__storeFilterCb(\'all\')">全店舗</button>';
+  let h = '<select class="sf-sel" onchange="__storeFilterCb(this.value)">';
+  h += '<option value="all"' + (current === 'all' ? ' selected' : '') + '>全店舗</option>';
   APP_CONFIG.storeGroups.forEach(function (g) {
-    if (!APP_CONFIG.stores.some(function (x) { return x.group === g.id; })) return;
-    h += '<button type="button" class="sf-btn' + (curGroup === g.id ? ' active' : '') + '" onclick="__storeFilterCb(\'group:' + g.id + '\')">' + (g.short || g.label) + '</button>';
-  });
-  if (curGroup !== 'all') {
-    const g = APP_CONFIG.storeGroups.find(function (x) { return x.id === curGroup; }) || {};
-    h += '<select class="sf-sel" onchange="__storeFilterCb(this.value)">';
-    h += '<option value="group:' + curGroup + '"' + (current === 'group:' + curGroup ? ' selected' : '') + '>' + (g.short || g.label || '') + '全体</option>';
-    APP_CONFIG.stores.filter(function (x) { return x.group === curGroup; }).forEach(function (x) {
+    const list = APP_CONFIG.stores.filter(function (x) { return x.group === g.id; });
+    if (!list.length) return;
+    const name = g.short || g.label;
+    h += '<optgroup label="' + name + '">';
+    h += '<option value="group:' + g.id + '"' + (current === 'group:' + g.id ? ' selected' : '') + '>' + name + '全体</option>';
+    list.forEach(function (x) {
       h += '<option value="' + x.id + '"' + (current === x.id ? ' selected' : '') + '>' + x.label + '</option>';
     });
-    h += '</select>';
-  }
+    h += '</optgroup>';
+  });
+  h += '</select>';
   el.innerHTML = h;
 }
